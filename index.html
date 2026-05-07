@@ -328,6 +328,10 @@ body.notes-off .stickynote { display: none !important; }
 }
 .stickynote.tilt-r { transform: rotate(2.5deg); }
 .stickynote.tilt-l { transform: rotate(-3deg); }
+.hero-note-left {
+  top: 130px;
+  left: clamp(24px, calc((100vw - 1320px) / 2 - 160px), 120px);
+}
 .stickynote .tag {
   display: inline-block;
   font-family: var(--mono);
@@ -1970,7 +1974,7 @@ body.notes-off .legend { display: none; }
       </div>
 
       <!-- annotations -->
-      <div class="stickynote tilt-l" style="top: 130px; left: -80px;">
+      <div class="stickynote tilt-l hero-note-left">
         <span class="tag">Sección 01 · HERO</span>
         Banner principal. CTA primario lleva a <b>/catálogo</b>; el secundario lleva al <b>Setup Builder</b>.
       </div>
