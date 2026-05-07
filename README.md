@@ -189,6 +189,6 @@ El array `PRODUCTS` contiene 12 artículos en 3 categorías:
 
 <div align="center">
 
-**© 2026 TECH/WHITE ** 
+** © 2026 TECH/WHITE ** 
 
 </div>
