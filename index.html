@@ -4,27 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TECH/WHITE — Prototipo · Boceto Funcional v0.1</title>
-<link rel="icon" type="image/png" href="favicon.png">
+<meta name="theme-color" content="#F8FBF7">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Kalam:wght@300;400;700&display=swap');
 
 /* ════════════════════════════════════════════
-   TOKENS — paper / ink wireframe system
+   TOKENS — pearl circuit color system
 ═════════════════════════════════════════════ */
 :root {
-  --paper:        #F4EFE3;
-  --paper-dim:    #EDE6D5;
-  --paper-deep:   #E2DAC4;
-  --ink:          #1C1B19;
-  --ink-soft:     #5A5751;
-  --ink-faint:    #8A857B;
-  --line:         #C7C0B0;
-  --line-strong:  #A39B86;
-  --pen-red:      #C8412B;
-  --pen-blue:     #2B4C7E;
-  --pen-green:    #4F6B3C;
-  --highlight:    #F5E89A;
-  --shadow:       rgba(28, 27, 25, 0.06);
+  --paper:        #F8FBF7;
+  --paper-dim:    #EEF5F1;
+  --paper-deep:   #DDEAE5;
+  --ink:          #17211F;
+  --ink-soft:     #4B605C;
+  --ink-faint:    #7C908A;
+  --line:         #C8D8D2;
+  --line-strong:  #9FB5AD;
+  --pen-red:      #D96C5F;
+  --pen-blue:     #2F6F8F;
+  --pen-green:    #5F8E72;
+  --highlight:    #FFF0B8;
+  --accent-wash:  rgba(217, 108, 95, 0.10);
+  --accent-veil:  rgba(217, 108, 95, 0.055);
+  --shadow:       rgba(23, 33, 31, 0.075);
 
   --serif: 'Fraunces', 'Times New Roman', serif;
   --mono:  'JetBrains Mono', 'Courier New', monospace;
@@ -311,7 +314,7 @@ body.notes-off .stickynote { display: none !important; }
   font-size: 17px;
   line-height: 1.25;
   width: 200px;
-  box-shadow: 4px 5px 0 rgba(28,27,25,0.12);
+  box-shadow: 4px 5px 0 rgba(23, 33, 31, 0.12);
   z-index: 6;
   transform: rotate(-2deg);
 }
@@ -319,9 +322,9 @@ body.notes-off .stickynote { display: none !important; }
   content: "";
   position: absolute; top: -8px; left: 50%;
   width: 60px; height: 14px;
-  background: rgba(255,255,255,0.45);
+  background: rgba(255, 255, 255, 0.58);
   transform: translateX(-50%) rotate(-3deg);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(23, 33, 31, 0.05);
 }
 .stickynote.tilt-r { transform: rotate(2.5deg); }
 .stickynote.tilt-l { transform: rotate(-3deg); }
@@ -332,7 +335,7 @@ body.notes-off .stickynote { display: none !important; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--pen-red);
-  background: rgba(200, 65, 43, 0.08);
+  background: var(--accent-wash);
   padding: 2px 7px;
   border: 1px solid var(--pen-red);
   margin-bottom: 8px;
@@ -349,7 +352,7 @@ body.notes-off .stickynote { display: none !important; }
   text-transform: uppercase;
   padding: 5px 11px;
   transform: rotate(-7deg);
-  background: rgba(200, 65, 43, 0.04);
+  background: var(--accent-veil);
   z-index: 6;
   pointer-events: none;
 }
@@ -413,7 +416,7 @@ body.notes-off .stickynote { display: none !important; }
 .section-h .underline::after {
   content: ""; position: absolute; left: -2%; bottom: -4px;
   width: 104%; height: 9px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 9'%3E%3Cpath d='M2 5 Q 50 2, 100 4 T 198 4' stroke='%23C8412B' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 9'%3E%3Cpath d='M2 5 Q 50 2, 100 4 T 198 4' stroke='%23D96C5F' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat;
   background-size: 100% 100%;
 }
 
@@ -749,7 +752,8 @@ body.notes-off .stickynote { display: none !important; }
   box-shadow: 4px 4px 0 var(--ink);
 }
 .prod-card .ribbon {
-  position: absolute; top: 8px; left: 8px;
+  position: absolute; top: 24px; left: 24px;
+  z-index: 3;
   background: var(--pen-red); color: var(--paper);
   font-family: var(--mono);
   font-size: 9px;
@@ -757,9 +761,12 @@ body.notes-off .stickynote { display: none !important; }
   letter-spacing: 0.16em;
   padding: 3px 7px;
   text-transform: uppercase;
+  border: 1px solid var(--paper);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 .prod-card .fav {
-  position: absolute; top: 8px; right: 8px;
+  position: absolute; top: 24px; right: 24px;
+  z-index: 3;
   width: 30px; height: 30px;
   background: var(--paper);
   border: 1px solid var(--ink);
@@ -1413,7 +1420,7 @@ body.notes-off .stickynote { display: none !important; }
   transition: border-color 0.15s, background 0.15s;
 }
 .shipping-opt:hover { border-color: var(--ink); }
-.shipping-opt.sel { border-color: var(--pen-red); background: rgba(200, 65, 43, 0.04); }
+.shipping-opt.sel { border-color: var(--pen-red); background: var(--accent-veil); }
 .shipping-opt input { accent-color: var(--pen-red); }
 .shipping-opt .so-name {
   font-family: var(--serif);
@@ -1587,7 +1594,7 @@ body.notes-off .stickynote { display: none !important; }
 .usecase:hover { border-color: var(--ink); }
 .usecase.sel {
   border-color: var(--pen-red);
-  background: rgba(200, 65, 43, 0.05);
+  background: var(--accent-veil);
 }
 .usecase .ico {
   font-family: var(--hand); font-size: 22px; margin-bottom: 4px;
@@ -2451,7 +2458,7 @@ body.notes-off .legend { display: none; }
         <div class="arrow blue" style="top: 130px; right: 360px;">
           <svg width="120" height="60">
             <path d="M115 50 Q 60 20, 5 35" />
-            <path d="M10 30 L 0 35 L 8 42" stroke-dasharray="0" stroke="#2B4C7E" />
+            <path d="M10 30 L 0 35 L 8 42" stroke-dasharray="0" stroke="#2F6F8F" />
           </svg>
         </div>
       </div>
