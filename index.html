@@ -179,10 +179,10 @@ body.notes-off .stickynote { display: none !important; }
   margin: 0 auto;
   padding: 0 56px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   height: 72px;
-  gap: 40px;
+  gap: 28px;
 }
 .brand {
   display: inline-flex; align-items: baseline; gap: 4px;
@@ -1819,26 +1819,629 @@ footer {
 body.notes-off .legend { display: none; }
 
 /* ════════════════════════════════════════════
+   SEARCH BAR (in navbar)
+═════════════════════════════════════════════ */
+.nav-search {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 8px 12px;
+  width: 240px;
+  position: relative;
+  transition: width 0.2s, box-shadow 0.15s, transform 0.15s;
+}
+.nav-search:focus-within {
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translate(-1px,-1px);
+  width: 280px;
+}
+.nav-search svg { width: 14px; height: 14px; stroke: var(--ink-soft); fill: none; stroke-width: 1.6; flex-shrink: 0; }
+.nav-search input {
+  flex: 1; min-width: 0;
+  border: none; background: transparent; outline: none;
+  font-family: var(--mono);
+  font-size: 12px; color: var(--ink); letter-spacing: 0.02em;
+}
+.nav-search input::placeholder { color: var(--ink-faint); font-style: italic; }
+.nav-search kbd {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  border: 1px solid var(--line-strong);
+  padding: 1px 5px; color: var(--ink-faint); letter-spacing: 0.04em;
+}
+
+.search-results {
+  position: absolute; top: 100%; left: -1px; right: -1px;
+  margin-top: 8px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  z-index: 990;
+  max-height: 420px; overflow-y: auto;
+  display: none;
+}
+.search-results.on { display: block; }
+.search-results .sr-empty {
+  padding: 22px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.search-results .sr-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px; align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px dashed var(--line-strong);
+  transition: background 0.12s;
+}
+.search-results .sr-item:last-child { border-bottom: none; }
+.search-results .sr-item:hover { background: var(--paper-dim); }
+.search-results .sr-item .sr-img {
+  aspect-ratio: 1/1;
+  background: var(--paper-dim);
+  border: 1px dashed var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+}
+.search-results .sr-item .sr-name {
+  font-family: var(--serif);
+  font-size: 14px; font-weight: 500;
+  line-height: 1.2;
+}
+.search-results .sr-item .sr-cat {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint); margin-top: 2px;
+}
+.search-results .sr-item .sr-price {
+  font-family: var(--serif);
+  font-size: 14px; font-weight: 600;
+}
+
+/* ════════════════════════════════════════════
+   PRODUCT ICONS (sketched SVG)
+═════════════════════════════════════════════ */
+.prod-img { display: flex; align-items: center; justify-content: center; }
+.prod-img .label { display: none; }
+.prod-icon {
+  position: relative; z-index: 2;
+  width: 62%; height: 62%;
+  display: flex; align-items: center; justify-content: center;
+}
+.prod-icon svg { width: 100%; height: 100%; overflow: visible; }
+.prod-icon svg * {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.prod-icon svg .accent { stroke: var(--pen-red); stroke-width: 1.8; }
+.prod-icon svg .fill   { fill: var(--paper-deep); }
+.prod-icon svg .fill-i { fill: var(--ink); stroke: none; }
+.prod-icon svg .fill-r { fill: var(--accent-veil); }
+
+.hero-card-img .prod-icon { width: 50%; height: 70%; }
+.cat-card-img .prod-icon  { width: 38%; height: 68%; }
+.cat-card-img { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.cat-card-img .label { display: none; }
+.cat-card-img .prod-icon + .prod-icon { margin-left: -10px; }
+
+/* ════════════════════════════════════════════
+   PRODUCT CARD — STOCK + RATING
+═════════════════════════════════════════════ */
+.prod-card { display: flex; flex-direction: column; }
+.prod-card .prod-foot { margin-top: auto; }
+.prod-rating {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px; color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.prod-rating .stars { color: var(--pen-red); font-family: var(--hand); font-size: 16px; line-height: 1; letter-spacing: 1px; }
+.prod-card.out-of-stock { opacity: 0.6; }
+.prod-card.out-of-stock .prod-add { pointer-events: none; opacity: 0.3; }
+
+/* ════════════════════════════════════════════
+   STOCK PILLS
+═════════════════════════════════════════════ */
+.stock-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong);
+  color: var(--pen-green);
+  background: var(--paper);
+}
+.stock-pill::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pen-green);
+}
+.stock-pill.low { color: var(--pen-red); border-color: var(--pen-red); }
+.stock-pill.low::before { background: var(--pen-red); animation: blink 1.4s ease-in-out infinite; }
+.stock-pill.out { color: var(--ink-faint); border-style: dashed; }
+.stock-pill.out::before { background: var(--ink-faint); }
+
+/* ════════════════════════════════════════════
+   PRODUCT DETAIL — TABS + REVIEWS + RELATED
+═════════════════════════════════════════════ */
+.pd-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1.5px solid var(--ink);
+  margin-top: 60px;
+}
+.pd-tab {
+  padding: 14px 22px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  background: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pd-tab:hover { color: var(--ink-soft); }
+.pd-tab.active { color: var(--ink); border-bottom-color: var(--pen-red); }
+.pd-tab-content { padding: 30px 0; display: none; }
+.pd-tab-content.active { display: block; }
+.pd-tab-content p {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  max-width: 720px;
+}
+.pd-spec-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 6px;
+}
+.pd-spec-list li {
+  border-left: 2px solid var(--pen-red);
+  padding: 6px 0 6px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.pd-spec-list li b {
+  font-family: var(--serif);
+  font-size: 14px; font-weight: 600;
+  color: var(--ink); display: block; margin-top: 2px;
+}
+
+.review-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 30px; align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.review-summary .big {
+  font-family: var(--serif);
+  font-size: 56px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.review-summary .big small {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--ink-faint);
+  letter-spacing: 0.1em; margin-left: 6px;
+}
+.review-summary .big-stars {
+  font-family: var(--hand);
+  font-size: 28px; color: var(--pen-red);
+  letter-spacing: 1px; line-height: 1;
+}
+.review-summary .review-count {
+  font-family: var(--mono);
+  font-size: 11px; color: var(--ink-soft);
+  letter-spacing: 0.06em;
+}
+.review-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.review-card {
+  border: 1px dashed var(--line-strong);
+  background: var(--paper);
+  padding: 18px;
+}
+.review-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px;
+}
+.review-head .who {
+  font-family: var(--serif);
+  font-size: 15px; font-weight: 600;
+}
+.review-head .when {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em; color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.review-card .stars {
+  font-family: var(--hand);
+  font-size: 18px; color: var(--pen-red);
+  letter-spacing: 1px; margin-bottom: 6px; line-height: 1;
+}
+.review-card .body {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px; line-height: 1.5;
+}
+
+.related-block {
+  padding: 60px 0 0;
+  border-top: 1px dashed var(--line-strong);
+  margin-top: 30px;
+}
+.related-block h3 {
+  font-family: var(--serif);
+  font-size: 32px; font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.related-block h3 em { font-style: italic; color: var(--pen-red); }
+
+/* ════════════════════════════════════════════
+   WISHLIST + ORDERS VIEW
+═════════════════════════════════════════════ */
+.wish-page, .orders-page { padding: 60px 0; }
+.wish-page h1, .orders-page h1 {
+  font-family: var(--serif);
+  font-size: 56px; font-weight: 300;
+  letter-spacing: -0.03em;
+  margin-bottom: 14px;
+}
+.wish-page h1 em, .orders-page h1 em { font-style: italic; color: var(--pen-red); }
+.wish-page .lead, .orders-page .lead {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-soft);
+  margin-bottom: 32px;
+}
+
+.order-item {
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  padding: 22px 26px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px; align-items: center;
+}
+.order-item .meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+.order-item h4 {
+  font-family: var(--serif);
+  font-size: 22px; font-weight: 500;
+  margin-bottom: 6px;
+}
+.order-item .order-summary {
+  font-family: var(--mono);
+  font-size: 11.5px; color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.order-item .order-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  background: var(--accent-veil);
+  border: 1px solid var(--pen-red);
+  color: var(--pen-red);
+  padding: 4px 10px;
+}
+.order-item .order-status.delivered {
+  background: rgba(95, 142, 114, 0.10);
+  border-color: var(--pen-green);
+  color: var(--pen-green);
+}
+.order-item .order-total { text-align: right; }
+.order-item .order-total b {
+  font-family: var(--serif);
+  font-size: 24px; font-weight: 500;
+  display: block; margin-bottom: 6px;
+}
+.order-item .order-total .btn { padding: 8px 14px; font-size: 10px; }
+
+/* ════════════════════════════════════════════
+   ORDER CONFIRMATION VIEW
+═════════════════════════════════════════════ */
+.confirm-page {
+  padding: 90px 0;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.confirm-mark {
+  width: 92px; height: 92px;
+  border: 2px solid var(--pen-green);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 26px;
+  position: relative;
+}
+.confirm-mark svg {
+  width: 44px; height: 44px; stroke: var(--pen-green);
+  fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.confirm-mark::after {
+  content: ""; position: absolute; inset: -10px;
+  border: 1px dashed var(--pen-green);
+  border-radius: 50%;
+}
+.confirm-page h1 {
+  font-family: var(--serif);
+  font-size: 56px; font-weight: 300;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+.confirm-page h1 em { font-style: italic; color: var(--pen-red); }
+.confirm-page .lead {
+  font-family: var(--mono);
+  font-size: 13px; color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.confirm-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 36px 0 18px;
+  text-align: left;
+}
+.confirm-meta div {
+  border: 1px dashed var(--line-strong);
+  padding: 14px 16px;
+}
+.confirm-meta span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.confirm-meta b {
+  font-family: var(--serif);
+  font-size: 18px; font-weight: 600;
+}
+.confirm-actions {
+  display: flex; gap: 12px; justify-content: center;
+  margin-top: 30px;
+}
+
+/* ════════════════════════════════════════════
+   FORM ERRORS / NOTICES
+═════════════════════════════════════════════ */
+.field.error input,
+.field.error select { border-bottom-color: var(--pen-red); }
+.field .err {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--pen-red);
+  letter-spacing: 0.04em; display: none;
+  margin-top: 4px;
+}
+.field.error .err { display: block; }
+.notice {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.04em;
+  background: var(--accent-veil);
+  border-left: 3px solid var(--pen-red);
+  padding: 10px 14px;
+  color: var(--ink); margin-bottom: 18px;
+}
+.notice.ok {
+  background: rgba(95, 142, 114, 0.10);
+  border-left-color: var(--pen-green);
+}
+.notice b { font-weight: 600; }
+
+/* ════════════════════════════════════════════
+   CART — ACTIONS + PROMO PILL + EMPTY
+═════════════════════════════════════════════ */
+.cart-actions {
+  display: flex; justify-content: space-between;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.cart-actions a {
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.cart-actions a:hover { color: var(--pen-red); border-bottom-color: var(--pen-red); }
+
+.promo-applied {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(95, 142, 114, 0.12);
+  border: 1px dashed var(--pen-green);
+  padding: 8px 12px; margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: 11px; color: var(--pen-green);
+  letter-spacing: 0.06em;
+}
+.promo-applied b { font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+.promo-applied button {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 14px;
+  color: var(--pen-green); padding: 0;
+}
+
+/* ════════════════════════════════════════════
+   CATALOG — search + active filter pills
+═════════════════════════════════════════════ */
+.cat-toolbar {
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 18px;
+}
+.cat-search {
+  flex: 1;
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  padding: 10px 12px;
+}
+.cat-search svg { width: 14px; height: 14px; stroke: var(--ink-soft); fill: none; stroke-width: 1.6; }
+.cat-search input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: var(--mono); font-size: 12px;
+}
+.cat-search input::placeholder { color: var(--ink-faint); font-style: italic; }
+.cat-search .clear-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 14px;
+  color: var(--ink-faint); display: none; line-height: 1;
+}
+.cat-search.has-value .clear-btn { display: inline; }
+
+.active-filters {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 22px;
+  min-height: 0;
+}
+.active-filters:empty { display: none; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.06em;
+  background: var(--paper-deep);
+  border: 1px solid var(--ink);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.filter-pill:hover { background: var(--ink); color: var(--paper); }
+.filter-pill::after { content: "✕"; font-size: 9px; opacity: 0.7; }
+
+.no-results {
+  padding: 60px 30px; text-align: center;
+  font-family: var(--mono); color: var(--ink-soft);
+  border: 1.5px dashed var(--line-strong);
+  margin-top: 8px;
+}
+.no-results .nr-h {
+  font-family: var(--serif); font-size: 28px;
+  margin-bottom: 8px; color: var(--ink); font-weight: 500;
+}
+
+/* Disable thumb on cat-side ranges (custom slider) */
+.price-range-wrap { margin-top: 8px; }
+.price-range-wrap input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 18px;
+  margin: 4px 0;
+}
+.price-range-wrap input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; background: var(--paper-deep); border-radius: 2px;
+}
+.price-range-wrap input[type="range"]::-moz-range-track {
+  height: 4px; background: var(--paper-deep); border-radius: 2px;
+}
+.price-range-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  margin-top: -6px; cursor: pointer;
+}
+.price-range-wrap input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.price-range-display {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--ink-soft); letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+.price-range-display b { font-family: var(--serif); font-size: 13px; color: var(--ink); font-weight: 600; }
+
+/* ════════════════════════════════════════════
+   RECENTLY VIEWED
+═════════════════════════════════════════════ */
+.recent-block { margin-top: 60px; padding-top: 50px; border-top: 1px dashed var(--line-strong); }
+.recent-block h3 {
+  font-family: var(--serif); font-size: 28px; font-weight: 400;
+  letter-spacing: -0.02em; margin-bottom: 6px;
+}
+.recent-block h3 em { font-style: italic; color: var(--pen-red); }
+.recent-block .recent-sub {
+  font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft);
+  margin-bottom: 22px;
+}
+
+/* ════════════════════════════════════════════
+   PROD CARD VARIANT IN BUILDER LIST
+═════════════════════════════════════════════ */
+.build-item-img .prod-icon { width: 80%; height: 80%; }
+.build-item-img .prod-icon svg * { stroke-width: 2; }
+
+/* ════════════════════════════════════════════
    RESPONSIVE
 ═════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .container, .nav-inner { padding: 0 32px; }
   .hero-grid { grid-template-columns: 1fr; gap: 50px; }
   .cat-grid, .testi-grid { grid-template-columns: 1fr; }
-  .prod-grid, .cat-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .prod-grid, .cat-grid-3, .related-grid, .wish-grid { grid-template-columns: repeat(2, 1fr); }
   .pd-grid, .cart-page, .checkout-grid, .builder-frame { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .annotation, .callout, .stickynote, .arrow, .stamp-note { display: none; }
   .legend { display: none; }
   .nav-links { display: none; }
+  .nav-search { width: 200px; }
+  .nav-search:focus-within { width: 220px; }
+  .review-list, .pd-spec-list { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .container, .nav-inner { padding: 0 18px; }
-  .prod-grid, .cat-grid-3, .footer-grid { grid-template-columns: 1fr; }
+  .nav-inner { gap: 14px; }
+  .prod-grid, .cat-grid-3, .footer-grid, .related-grid, .wish-grid { grid-template-columns: 1fr; }
   .cat-page { grid-template-columns: 1fr; }
   .cat-side { border: none; padding: 0; }
   .offer { flex-direction: column; align-items: flex-start; gap: 20px; }
   .offer-side { text-align: left; flex-direction: column; align-items: flex-start; }
+  .nav-search { width: 100%; min-width: 0; }
+  .nav-search kbd { display: none; }
+  .confirm-meta { grid-template-columns: 1fr; }
+  .order-item { grid-template-columns: 1fr; }
+  .order-item .order-total { text-align: left; }
+  .pd-tabs { overflow-x: auto; }
+}
+.related-grid, .wish-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
 }
 
 </style>
@@ -1891,12 +2494,19 @@ body.notes-off .legend { display: none; }
         <li><a data-page="builder" onclick="navigate('builder')">Setup Builder</a></li>
         <li><a data-page="cuenta" onclick="navigate('cuenta')">Cuenta</a></li>
       </ul>
+      <div class="nav-search" id="navSearch">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Busca GPU, monitor, mouse…" autocomplete="off">
+        <kbd>/</kbd>
+        <div class="search-results" id="searchResults"></div>
+      </div>
       <div class="nav-actions">
         <button class="icon-btn" onclick="navigate('cuenta')" title="Cuenta">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
-        <button class="icon-btn" title="Favoritos">
+        <button class="icon-btn" onclick="navigate('wishlist')" title="Favoritos">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="badge" id="wishBadge" style="display:none">0</span>
         </button>
         <button class="icon-btn" onclick="navigate('cart')" title="Carrito">
           <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -1948,14 +2558,16 @@ body.notes-off .legend { display: none; }
           </div>
 
           <!-- Hero floating card mockup -->
-          <div class="hero-card">
+          <div class="hero-card" onclick="goToProduct('h1')" style="cursor: pointer;">
             <div class="corner tl"></div><div class="corner tr"></div>
             <div class="corner bl"></div><div class="corner br"></div>
             <div class="hero-card-label">
               <span>◇ Drop activo</span>
               <span>HW · 001</span>
             </div>
-            <div class="hero-card-img placeholder cross"><span class="label">RTX 4060 Ti · img</span></div>
+            <div class="hero-card-img placeholder cross">
+              <div class="prod-icon" style="width:55%; height:75%;"><svg viewBox="0 0 100 70"><rect x="6" y="14" width="88" height="36" rx="3"/><rect class="fill" x="14" y="20" width="20" height="20" rx="2"/><rect class="fill" x="42" y="20" width="20" height="20" rx="2"/><circle class="accent" cx="24" cy="30" r="6"/><circle class="accent" cx="52" cy="30" r="6"/><line x1="76" y1="20" x2="88" y2="20"/><line x1="76" y1="26" x2="88" y2="26"/><line x1="76" y1="32" x2="88" y2="32"/><rect x="20" y="50" width="60" height="8"/><line x1="14" y1="58" x2="24" y2="64" class="accent"/></svg></div>
+            </div>
             <div class="hero-card-name">RTX 4060 Ti<br>8GB ZOTAC</div>
             <div class="hero-card-meta">
               <span><b>4352</b> CUDA</span>
@@ -1967,7 +2579,7 @@ body.notes-off .legend { display: none; }
                 $11,999
                 <small>$14,999</small>
               </div>
-              <button class="btn small" onclick="addToCart('h1','RTX 4060 Ti',11999)">Agregar</button>
+              <button class="btn small" onclick="event.stopPropagation();addToCart('h1')">Agregar</button>
             </div>
           </div>
         </div>
@@ -2003,21 +2615,29 @@ body.notes-off .legend { display: none; }
         <div class="cat-grid">
           <div class="cat-card" onclick="navigate('catalogo','monitores')">
             <div class="cat-card-num">CAT · 01</div>
-            <div class="cat-card-img placeholder cross"><span class="label">monitor.png</span></div>
+            <div class="cat-card-img placeholder cross">
+              <div class="prod-icon"><svg viewBox="0 0 100 70"><rect x="8" y="8" width="84" height="44" rx="2"/><line x1="14" y1="48" x2="86" y2="48"/><polygon class="fill" points="50,16 64,38 36,38" /><circle class="accent" cx="80" cy="14" r="1.5" /><line x1="40" y1="56" x2="60" y2="56"/><line x1="50" y1="52" x2="50" y2="56"/><rect x="34" y="56" width="32" height="4"/></svg></div>
+            </div>
             <h3 class="cat-card-title">Monitores de<br>alta gama</h3>
             <p class="cat-card-desc">144Hz — 4K — 1ms. Inmersión total para cada batalla.</p>
             <div class="cat-card-foot"><span>Ver más</span><span class="arrow-r">→</span></div>
           </div>
           <div class="cat-card" onclick="navigate('catalogo','hardware')">
             <div class="cat-card-num">CAT · 02</div>
-            <div class="cat-card-img placeholder cross"><span class="label">gpu · cpu · ram</span></div>
+            <div class="cat-card-img placeholder cross">
+              <div class="prod-icon"><svg viewBox="0 0 100 70"><rect x="6" y="14" width="88" height="36" rx="3"/><rect class="fill" x="14" y="20" width="20" height="20" rx="2"/><rect class="fill" x="42" y="20" width="20" height="20" rx="2"/><circle class="accent" cx="24" cy="30" r="6"/><circle class="accent" cx="52" cy="30" r="6"/><line x1="76" y1="20" x2="88" y2="20"/><line x1="76" y1="26" x2="88" y2="26"/><line x1="76" y1="32" x2="88" y2="32"/><rect x="20" y="50" width="60" height="8"/><line x1="14" y1="58" x2="24" y2="64" class="accent"/></svg></div>
+              <div class="prod-icon"><svg viewBox="0 0 100 70"><rect x="22" y="14" width="56" height="42" rx="2" class="fill"/><rect x="32" y="22" width="36" height="26"/><line x1="22" y1="22" x2="14" y2="22"/><line x1="22" y1="30" x2="14" y2="30"/><line x1="22" y1="38" x2="14" y2="38"/><line x1="22" y1="46" x2="14" y2="46"/><line x1="86" y1="22" x2="78" y2="22"/><line x1="86" y1="30" x2="78" y2="30"/><line x1="86" y1="38" x2="78" y2="38"/><line x1="86" y1="46" x2="78" y2="46"/><circle class="accent" cx="50" cy="35" r="4"/></svg></div>
+            </div>
             <h3 class="cat-card-title">Hardware y<br>componentes</h3>
             <p class="cat-card-desc">GPUs, CPUs, RAM y más. Potencia real para tu build.</p>
             <div class="cat-card-foot"><span>Ver más</span><span class="arrow-r">→</span></div>
           </div>
           <div class="cat-card" onclick="navigate('catalogo','perifericos')">
             <div class="cat-card-num">CAT · 03</div>
-            <div class="cat-card-img placeholder cross"><span class="label">teclado · mouse</span></div>
+            <div class="cat-card-img placeholder cross">
+              <div class="prod-icon"><svg viewBox="0 0 100 70"><path d="M50 6 C 26 6, 16 22, 16 38 C 16 56, 28 64, 50 64 C 72 64, 84 56, 84 38 C 84 22, 74 6, 50 6 Z"/><line x1="50" y1="6" x2="50" y2="34"/><line x1="36" y1="20" x2="50" y2="20"/><circle class="accent" cx="50" cy="26" r="2"/><rect x="44" y="14" width="12" height="6" class="fill"/></svg></div>
+              <div class="prod-icon"><svg viewBox="0 0 100 70"><rect x="6" y="20" width="88" height="34" rx="2"/><rect x="12" y="26" width="6" height="6" class="fill"/><rect x="22" y="26" width="6" height="6" class="fill"/><rect x="32" y="26" width="6" height="6" class="fill"/><rect x="42" y="26" width="6" height="6" class="fill"/><rect x="52" y="26" width="6" height="6" class="fill"/><rect x="62" y="26" width="6" height="6" class="fill"/><rect x="72" y="26" width="6" height="6" class="fill"/><rect x="82" y="26" width="6" height="6" class="fill"/><rect x="22" y="36" width="56" height="4"/><rect class="accent" x="22" y="46" width="56" height="4"/></svg></div>
+            </div>
             <h3 class="cat-card-title">Periféricos y<br>accesorios</h3>
             <p class="cat-card-desc">Teclados, mice, headsets. Precisión ganadora.</p>
             <div class="cat-card-foot"><span>Ver más</span><span class="arrow-r">→</span></div>
@@ -2077,6 +2697,16 @@ body.notes-off .legend { display: none; }
       </div>
     </section>
 
+    <!-- RECENTLY VIEWED -->
+    <section class="section" id="recentSection" style="display: none;">
+      <div class="container">
+        <div class="section-tag">★ · Recientes</div>
+        <h2 class="section-h">Vistos <em>hace poco</em>.</h2>
+        <p class="section-sub">Productos que abriste en esta sesión — guardados localmente.</p>
+        <div class="prod-grid" id="recentGrid" style="margin-top: 32px;"></div>
+      </div>
+    </section>
+
     <!-- TESTIMONIALS -->
     <section class="section">
       <div class="container">
@@ -2120,30 +2750,33 @@ body.notes-off .legend { display: none; }
           <h4>Filtros</h4>
           <div class="filter-group">
             <h4 style="border: none; padding: 0; margin-bottom: 8px;">Categoría</h4>
-            <label><input type="checkbox" checked> Monitores</label>
-            <label><input type="checkbox" checked> Hardware</label>
-            <label><input type="checkbox" checked> Periféricos</label>
+            <label><input type="checkbox" data-filter="cat" value="Monitores"> Monitores</label>
+            <label><input type="checkbox" data-filter="cat" value="Hardware"> Hardware</label>
+            <label><input type="checkbox" data-filter="cat" value="Periféricos"> Periféricos</label>
           </div>
-          <div class="filter-group">
+          <div class="filter-group" id="brandGroup">
             <h4 style="border: none; padding: 0; margin-bottom: 8px;">Marca</h4>
-            <label><input type="checkbox"> ZOTAC</label>
-            <label><input type="checkbox"> Samsung</label>
-            <label><input type="checkbox"> Logitech</label>
-            <label><input type="checkbox"> Razer</label>
-            <label><input type="checkbox"> Corsair</label>
+            <!-- inyectado por JS -->
           </div>
           <div class="filter-group">
             <h4 style="border: none; padding: 0; margin-bottom: 8px;">Precio</h4>
-            <div class="price-bar"></div>
-            <div style="height: 30px;"></div>
+            <div class="price-range-wrap">
+              <input type="range" id="priceMin" min="2000" max="20000" step="500" value="2000">
+              <input type="range" id="priceMax" min="2000" max="20000" step="500" value="20000">
+              <div class="price-range-display">
+                <span><b id="priceMinVal">$2,000</b></span>
+                <span><b id="priceMaxVal">$20,000</b></span>
+              </div>
+            </div>
           </div>
           <div class="filter-group">
             <h4 style="border: none; padding: 0; margin-bottom: 8px;">Disponibilidad</h4>
-            <label><input type="checkbox" checked> En stock</label>
-            <label><input type="checkbox"> Pre-venta</label>
+            <label><input type="checkbox" data-filter="stock" value="instock"> Solo en stock</label>
+            <label><input type="checkbox" data-filter="stock" value="sale"> En oferta</label>
           </div>
+          <button class="btn ghost small" style="width:100%; justify-content:center; margin-top: 4px;" onclick="clearFilters()">Limpiar filtros</button>
 
-          <div class="callout" style="position: relative; max-width: 100%; margin-top: 16px;">
+          <div class="callout" style="position: relative; max-width: 100%; margin-top: 22px;">
             Filtros se aplican <b>en vivo</b> sin reload.
           </div>
         </aside>
@@ -2153,31 +2786,36 @@ body.notes-off .legend { display: none; }
             <a onclick="navigate('home')">Inicio</a><span class="sep">/</span><span>Catálogo</span>
           </div>
           <h1 style="font-family: var(--serif); font-size: 48px; font-weight: 300; letter-spacing: -0.025em; margin-bottom: 18px;">Catálogo <em>completo</em></h1>
-          <p class="section-sub" style="margin-bottom: 30px;">20 productos en 3 categorías · Ordenamiento, búsqueda y paginación.</p>
+          <p class="section-sub" style="margin-bottom: 24px;">Hardware, monitores y periféricos. Filtros, ordenamiento, búsqueda y paginación funcionales.</p>
+
+          <div class="cat-toolbar">
+            <div class="cat-search" id="catSearch">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" id="catalogSearchInput" placeholder="Buscar dentro del catálogo…">
+              <button class="clear-btn" onclick="clearCatalogSearch()" title="Limpiar">✕</button>
+            </div>
+          </div>
+
+          <div class="active-filters" id="activeFilters"></div>
 
           <div class="cat-main-head">
-            <div class="count">Mostrando <b>20</b> productos</div>
+            <div class="count">Mostrando <b id="catCount">0</b> productos</div>
             <div class="sort">
               <label>Ordenar</label>
-              <select>
-                <option>Relevancia</option>
-                <option>Precio: menor a mayor</option>
-                <option>Precio: mayor a menor</option>
-                <option>Más recientes</option>
-                <option>Más vendidos</option>
+              <select id="sortSelect" onchange="applyFilters()">
+                <option value="relevance">Relevancia</option>
+                <option value="price-asc">Precio: menor a mayor</option>
+                <option value="price-desc">Precio: mayor a menor</option>
+                <option value="rating">Mejor calificados</option>
+                <option value="reviews">Más reseñados</option>
+                <option value="newest">Más recientes</option>
               </select>
             </div>
           </div>
 
           <div class="cat-grid-3" id="catalogGrid"></div>
 
-          <div style="display: flex; justify-content: center; gap: 4px; margin-top: 50px;">
-            <button class="chip">‹</button>
-            <button class="chip active">1</button>
-            <button class="chip">2</button>
-            <button class="chip">3</button>
-            <button class="chip">›</button>
-          </div>
+          <div id="paginationBar" style="display: flex; justify-content: center; gap: 4px; margin-top: 50px;"></div>
 
         </main>
 
@@ -2194,83 +2832,8 @@ body.notes-off .legend { display: none; }
   ═══════════════════════════════════════════════ -->
   <div class="view" id="view-product">
     <div class="container">
-      <div class="pd-page">
-        <div class="breadcrumbs">
-          <a onclick="navigate('home')">Inicio</a><span class="sep">/</span>
-          <a onclick="navigate('catalogo')">Catálogo</a><span class="sep">/</span>
-          <a onclick="navigate('catalogo','hardware')">Hardware</a><span class="sep">/</span>
-          <span id="pdBreadName">RTX 4060 Ti</span>
-        </div>
-
-        <div class="pd-grid">
-          <div class="pd-gallery">
-            <div class="pd-thumbs">
-              <div class="pd-thumb active placeholder cross"></div>
-              <div class="pd-thumb placeholder cross"></div>
-              <div class="pd-thumb placeholder cross"></div>
-              <div class="pd-thumb placeholder cross"></div>
-            </div>
-            <div class="pd-main-img placeholder cross"><span class="label" id="pdImgLabel">RTX 4060 Ti · vista 1</span></div>
-          </div>
-
-          <div class="pd-info">
-            <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px;">
-              Hardware · GPU · ZOTAC
-            </div>
-            <h1 id="pdName">RTX 4060 Ti 8GB ZOTAC</h1>
-            <div class="stars">
-              <span>★★★★★</span> <span>4.8 · 247 reseñas</span>
-            </div>
-
-            <div class="pd-price-block">
-              <span class="now" id="pdPrice">$11,999</span>
-              <span class="was">$14,999</span>
-              <span class="save">−20%</span>
-            </div>
-
-            <p class="pd-desc">
-              GPU de gama media-alta con arquitectura Ada Lovelace. DLSS 3, Ray Tracing de tercera generación y consumo contenido.
-              Ideal para 1440p en alto rendimiento o 4K con DLSS activo.
-            </p>
-
-            <div class="pd-spec-grid">
-              <div><span>Arquitectura</span><b>Ada Lovelace</b></div>
-              <div><span>Memoria</span><b>8GB GDDR6</b></div>
-              <div><span>CUDA Cores</span><b>4352</b></div>
-              <div><span>Boost Clock</span><b>2535 MHz</b></div>
-            </div>
-
-            <div class="pd-cta">
-              <div class="pd-qty">
-                <button onclick="qtyChange(-1)">−</button>
-                <input type="text" value="1" id="pdQty">
-                <button onclick="qtyChange(1)">+</button>
-              </div>
-              <button class="btn primary" style="flex: 1;" onclick="addToCart('h1','RTX 4060 Ti',11999, parseInt(document.getElementById('pdQty').value))">
-                Agregar al carrito
-                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-              <button class="icon-btn" title="Favorito">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </button>
-            </div>
-
-            <div class="pd-meta-row">
-              <span>📦 <b>Envío gratis</b> · llega en 24-48h en CDMX</span>
-              <span>↻ <b>Devoluciones</b> · 30 días sin costo</span>
-              <span>🛡 <b>Garantía</b> · 1 año oficial ZOTAC</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="stickynote tilt-l" style="top: 120px; left: -130px;">
-          <span class="tag">Pieza · Detalle</span>
-          Galería con <b>thumbs</b> + <b>imagen principal</b>. Cantidad, fav y agregar al carrito persisten en localStorage.
-        </div>
-        <div class="annotation" style="top: 480px; right: 10px;">
-          <span class="num">04</span>
-          Specs en grid → fácil escaneo
-        </div>
+      <div class="pd-page" id="productPage">
+        <!-- contenido inyectado por renderProduct() -->
       </div>
     </div>
   </div>
@@ -2287,8 +2850,9 @@ body.notes-off .legend { display: none; }
           <div class="cart-list" id="cartList">
             <!-- rendered by JS -->
           </div>
-          <div class="callout" style="position: relative; margin-top: 20px; max-width: 100%;">
-            ⚠ Estado <b>vacío</b> también está diseñado — al borrar todo aparece el placeholder con CTA al catálogo.
+          <div class="cart-actions">
+            <a onclick="navigate('catalogo')">← Seguir comprando</a>
+            <a class="danger" onclick="clearCart()">Vaciar carrito</a>
           </div>
         </div>
 
@@ -2296,16 +2860,21 @@ body.notes-off .legend { display: none; }
           <h3>Resumen del pedido</h3>
           <div class="summary-row"><span>Subtotal</span><b id="sumSubtotal">$0</b></div>
           <div class="summary-row"><span>Envío</span><b id="sumShipping">—</b></div>
-          <div class="summary-row"><span>Descuento</span><b>—</b></div>
+          <div class="summary-row" id="sumDiscountRow" style="display:none;"><span>Descuento</span><b id="sumDiscount" style="color: var(--pen-green);">−$0</b></div>
+
+          <div id="appliedPromoArea"></div>
 
           <div class="summary-promo">
-            <input type="text" placeholder="Código de descuento">
-            <button>Aplicar</button>
+            <input type="text" id="promoInput" placeholder="Código de descuento">
+            <button onclick="applyPromo()">Aplicar</button>
           </div>
+          <p style="font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: -8px; margin-bottom: 12px; letter-spacing: 0.05em;">
+            Prueba: <b>TECH10</b>, <b>GAMER20</b>, <b>ENVIO</b>
+          </p>
 
           <div class="summary-row total"><span>Total</span><b id="sumTotal">$0</b></div>
 
-          <button class="btn primary" style="width: 100%; margin-top: 18px; justify-content: center;" onclick="navigate('checkout')">
+          <button class="btn primary" id="checkoutBtn" style="width: 100%; margin-top: 18px; justify-content: center;" onclick="goToCheckout()">
             Ir al checkout
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
@@ -2317,7 +2886,7 @@ body.notes-off .legend { display: none; }
 
         <div class="stickynote tilt-r" style="top: 200px; right: -50px;">
           <span class="tag">Carrito</span>
-          Sidebar <b>sticky</b> con totales en vivo. Cupones simulados (TECH10, GAMER20).
+          Sidebar <b>sticky</b> con totales en vivo. Cupones simulados (TECH10, GAMER20, ENVIO).
         </div>
       </div>
     </div>
@@ -2335,21 +2904,21 @@ body.notes-off .legend { display: none; }
         <h1 style="font-family: var(--serif); font-size: 56px; font-weight: 300; letter-spacing: -0.03em; margin-bottom: 30px;">Finalizar <em>compra</em></h1>
 
         <div class="steps">
-          <div class="step done" onclick="goStep(1)">
+          <div class="step active" data-step="1" onclick="goStep(1)">
             <div class="step-num">1</div>
             <div class="step-info">
               <h5>Paso 1</h5>
               <p>Dirección</p>
             </div>
           </div>
-          <div class="step active" onclick="goStep(2)">
+          <div class="step" data-step="2" onclick="goStep(2)">
             <div class="step-num">2</div>
             <div class="step-info">
               <h5>Paso 2</h5>
               <p>Envío</p>
             </div>
           </div>
-          <div class="step" onclick="goStep(3)">
+          <div class="step" data-step="3" onclick="goStep(3)">
             <div class="step-num">3</div>
             <div class="step-info">
               <h5>Paso 3</h5>
@@ -2360,12 +2929,89 @@ body.notes-off .legend { display: none; }
 
         <div class="checkout-grid">
           <div>
-            <div class="form-card">
+            <!-- STEP 1: Dirección -->
+            <div class="form-card step-panel" data-panel="1">
+              <h3>Datos de envío</h3>
+              <p class="form-sub">Donde recibirás tu pedido. Todos los campos son obligatorios.</p>
+
+              <div class="form-row">
+                <div class="field" data-required>
+                  <label>Nombre</label>
+                  <input type="text" id="coNombre" placeholder="Fabricio">
+                  <span class="err">Ingresa tu nombre</span>
+                </div>
+                <div class="field" data-required>
+                  <label>Apellidos</label>
+                  <input type="text" id="coApellido" placeholder="Pérez">
+                  <span class="err">Ingresa tus apellidos</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field" data-required data-type="email">
+                  <label>Email</label>
+                  <input type="email" id="coEmail" placeholder="tu@email.com">
+                  <span class="err">Email inválido</span>
+                </div>
+                <div class="field" data-required data-type="phone">
+                  <label>Teléfono</label>
+                  <input type="tel" id="coTel" placeholder="55 1234 5678">
+                  <span class="err">Teléfono inválido (10 dígitos)</span>
+                </div>
+              </div>
+              <div class="form-row single">
+                <div class="field" data-required>
+                  <label>Calle y número</label>
+                  <input type="text" id="coCalle" placeholder="Av. Insurgentes Sur 1234, int. 502">
+                  <span class="err">Ingresa tu dirección</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field" data-required>
+                  <label>Colonia</label>
+                  <input type="text" id="coColonia" placeholder="Roma Norte">
+                  <span class="err">Falta colonia</span>
+                </div>
+                <div class="field" data-required data-type="cp">
+                  <label>Código postal</label>
+                  <input type="text" id="coCP" placeholder="06700">
+                  <span class="err">CP inválido (5 dígitos)</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field" data-required>
+                  <label>Ciudad</label>
+                  <input type="text" id="coCiudad" placeholder="Ciudad de México">
+                  <span class="err">Falta ciudad</span>
+                </div>
+                <div class="field" data-required>
+                  <label>Estado</label>
+                  <select id="coEstado">
+                    <option value="">Selecciona…</option>
+                    <option>CDMX</option>
+                    <option>Estado de México</option>
+                    <option>Jalisco</option>
+                    <option>Nuevo León</option>
+                    <option>Querétaro</option>
+                    <option>Puebla</option>
+                    <option>Otro</option>
+                  </select>
+                  <span class="err">Selecciona estado</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 30px; padding-top: 24px; border-top: 1px dashed var(--line-strong); display: flex; justify-content: space-between;">
+                <button class="btn ghost" onclick="navigate('cart')">← Volver al carrito</button>
+                <button class="btn primary" onclick="submitStep(1)">Continuar al envío →</button>
+              </div>
+            </div>
+
+            <!-- STEP 2: Envío -->
+            <div class="form-card step-panel" data-panel="2" style="display:none;">
               <h3>Método de envío</h3>
               <p class="form-sub">Selecciona la opción que mejor se adapte a tu urgencia.</p>
 
-              <div class="shipping-options">
-                <label class="shipping-opt sel">
+              <div class="shipping-options" id="shippingOptions">
+                <label class="shipping-opt sel" data-shipid="express" data-price="0">
                   <input type="radio" name="shipping" checked>
                   <div style="flex:1">
                     <div class="so-name">Express CDMX · 24h</div>
@@ -2373,7 +3019,7 @@ body.notes-off .legend { display: none; }
                   </div>
                   <div class="so-price">Gratis</div>
                 </label>
-                <label class="shipping-opt">
+                <label class="shipping-opt" data-shipid="standard" data-price="120">
                   <input type="radio" name="shipping">
                   <div style="flex:1">
                     <div class="so-name">Estándar · 3-5 días</div>
@@ -2381,11 +3027,11 @@ body.notes-off .legend { display: none; }
                   </div>
                   <div class="so-price">$120</div>
                 </label>
-                <label class="shipping-opt">
+                <label class="shipping-opt" data-shipid="pickup" data-price="0">
                   <input type="radio" name="shipping">
                   <div style="flex:1">
                     <div class="so-name">Recoger en tienda</div>
-                    <div class="so-eta">CDMX · Roma Norte</div>
+                    <div class="so-eta">CDMX · Roma Norte · Lun-Sab 11-19h</div>
                   </div>
                   <div class="so-price">Gratis</div>
                 </label>
@@ -2393,28 +3039,162 @@ body.notes-off .legend { display: none; }
 
               <div style="margin-top: 30px; padding-top: 24px; border-top: 1px dashed var(--line-strong); display: flex; justify-content: space-between;">
                 <button class="btn ghost" onclick="goStep(1)">← Volver</button>
-                <button class="btn primary" onclick="goStep(3)">Continuar al pago →</button>
+                <button class="btn primary" onclick="submitStep(2)">Continuar al pago →</button>
+              </div>
+            </div>
+
+            <!-- STEP 3: Pago -->
+            <div class="form-card step-panel" data-panel="3" style="display:none;">
+              <h3>Método de pago</h3>
+              <p class="form-sub">Pago simulado — no se cobrará nada. Para el prototipo cualquier dato pasa la validación de formato.</p>
+
+              <div style="display: flex; gap: 10px; margin-bottom: 22px;">
+                <label class="shipping-opt sel" style="flex:1; cursor: pointer;">
+                  <input type="radio" name="paytype" value="card" checked onchange="togglePayMethod()">
+                  <div class="so-name" style="font-size: 14px;">Tarjeta</div>
+                </label>
+                <label class="shipping-opt" style="flex:1;">
+                  <input type="radio" name="paytype" value="oxxo" onchange="togglePayMethod()">
+                  <div class="so-name" style="font-size: 14px;">OXXO</div>
+                </label>
+                <label class="shipping-opt" style="flex:1;">
+                  <input type="radio" name="paytype" value="paypal" onchange="togglePayMethod()">
+                  <div class="so-name" style="font-size: 14px;">PayPal</div>
+                </label>
+              </div>
+
+              <div id="payCard">
+                <div class="form-row single">
+                  <div class="field" data-required data-type="card">
+                    <label>Número de tarjeta</label>
+                    <input type="text" id="payNum" placeholder="4242 4242 4242 4242" maxlength="19">
+                    <span class="err">Número de tarjeta inválido</span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="field" data-required data-type="exp">
+                    <label>Vencimiento</label>
+                    <input type="text" id="payExp" placeholder="MM/AA" maxlength="5">
+                    <span class="err">Formato MM/AA</span>
+                  </div>
+                  <div class="field" data-required data-type="cvv">
+                    <label>CVV</label>
+                    <input type="text" id="payCVV" placeholder="123" maxlength="4">
+                    <span class="err">CVV inválido</span>
+                  </div>
+                </div>
+                <div class="form-row single">
+                  <div class="field" data-required>
+                    <label>Nombre en la tarjeta</label>
+                    <input type="text" id="payName" placeholder="Como aparece en la tarjeta">
+                    <span class="err">Falta nombre</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="payOxxo" style="display:none;">
+                <div class="notice">
+                  Recibirás un <b>código de pago</b> por email. Tienes 3 días para pagar en cualquier tienda OXXO.
+                </div>
+              </div>
+
+              <div id="payPaypal" style="display:none;">
+                <div class="notice">
+                  Serás redirigido a <b>PayPal</b> al confirmar el pedido.
+                </div>
+              </div>
+
+              <div style="margin-top: 30px; padding-top: 24px; border-top: 1px dashed var(--line-strong); display: flex; justify-content: space-between;">
+                <button class="btn ghost" onclick="goStep(2)">← Volver</button>
+                <button class="btn primary" onclick="placeOrder()">
+                  Confirmar pedido
+                  <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
               </div>
             </div>
           </div>
 
           <aside class="cart-summary">
             <h3>Tu pedido</h3>
-            <div class="summary-row"><span>Subtotal (3 items)</span><b>$15,997</b></div>
-            <div class="summary-row"><span>Envío express</span><b>Gratis</b></div>
-            <div class="summary-row"><span>Impuestos</span><b>$2,560</b></div>
-            <div class="summary-row total"><span>Total</span><b>$18,557</b></div>
+            <div id="checkoutItems" style="margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--line-strong); font-family: var(--mono); font-size: 11px; color: var(--ink-soft);"></div>
+            <div class="summary-row"><span>Subtotal</span><b id="coSubtotal">$0</b></div>
+            <div class="summary-row"><span>Envío</span><b id="coShipping">—</b></div>
+            <div class="summary-row" id="coDiscRow" style="display:none;"><span>Descuento</span><b id="coDiscount" style="color: var(--pen-green);">−$0</b></div>
+            <div class="summary-row"><span>IVA (16%)</span><b id="coTax">$0</b></div>
+            <div class="summary-row total"><span>Total</span><b id="coTotal">$0</b></div>
           </aside>
         </div>
 
         <div class="stickynote tilt-l" style="top: 80px; right: 0;">
           <span class="tag">Checkout · 3 pasos</span>
-          Stepper <b>clickeable</b> · pasos completos quedan grises, el activo se enciende. Sticky summary a la derecha.
+          Stepper <b>clickeable</b> con validación real por paso. Confirmar genera un pedido en <b>localStorage</b>.
         </div>
-        <div class="annotation" style="top: 220px; left: -30px;">
-          <span class="num">05</span>
-          Paso activo coloreado<br>en negro
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       VIEW: ORDER CONFIRMATION
+  ═══════════════════════════════════════════════ -->
+  <div class="view" id="view-confirm">
+    <div class="container">
+      <div class="confirm-page">
+        <div class="confirm-mark">
+          <svg viewBox="0 0 24 24"><path d="M5 12.5l5 5 9-11"/></svg>
         </div>
+        <h1>Pedido <em>confirmado</em></h1>
+        <p class="lead">Te enviamos los detalles a <b id="confirmEmail">tu@email.com</b>.</p>
+        <p class="lead">Recibirás otro email cuando tu pedido salga del almacén.</p>
+
+        <div class="confirm-meta">
+          <div><span>Número</span><b id="confirmNum">#000000</b></div>
+          <div><span>Total</span><b id="confirmTotal">$0</b></div>
+          <div><span>Llega</span><b id="confirmEta">Mañana</b></div>
+        </div>
+
+        <div class="confirm-actions">
+          <button class="btn ghost" onclick="navigate('orders')">Ver mis pedidos</button>
+          <button class="btn primary" onclick="navigate('home')">Volver al inicio</button>
+        </div>
+
+        <div class="annotation" style="top: 60px; right: -30px;">
+          <span class="num">07</span>
+          Pedido guardado en <b>localStorage</b><br>aparece en "Mis pedidos"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       VIEW: WISHLIST
+  ═══════════════════════════════════════════════ -->
+  <div class="view" id="view-wishlist">
+    <div class="container">
+      <div class="wish-page">
+        <div class="breadcrumbs">
+          <a onclick="navigate('home')">Inicio</a><span class="sep">/</span><span>Favoritos</span>
+        </div>
+        <h1>Tus <em>favoritos</em>.</h1>
+        <p class="lead">Productos que guardaste para después. Persisten en tu navegador.</p>
+        <div id="wishlistGrid" class="wish-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       VIEW: ORDERS
+  ═══════════════════════════════════════════════ -->
+  <div class="view" id="view-orders">
+    <div class="container">
+      <div class="orders-page">
+        <div class="breadcrumbs">
+          <a onclick="navigate('home')">Inicio</a><span class="sep">/</span>
+          <a onclick="navigate('cuenta')">Cuenta</a><span class="sep">/</span>
+          <span>Mis pedidos</span>
+        </div>
+        <h1>Mis <em>pedidos</em>.</h1>
+        <p class="lead">Historial de pedidos del prototipo — los que confirmes en checkout aparecen aquí.</p>
+        <div id="ordersList"></div>
       </div>
     </div>
   </div>
@@ -2425,39 +3205,122 @@ body.notes-off .legend { display: none; }
   <div class="view" id="view-cuenta">
     <div class="container">
       <div class="account-page">
-        <div class="account-card">
-          <h2>Bienvenido<br>de vuelta.</h2>
-          <p class="account-sub">Sistema de auth simulado — los datos persisten en localStorage para el prototipo.</p>
+        <!-- LOGGED OUT -->
+        <div class="account-card" id="acGuest">
+          <h2 id="acHeading">Bienvenido<br>de vuelta.</h2>
+          <p class="account-sub">Auth simulado — los datos persisten en localStorage para el prototipo.</p>
 
           <div class="account-tabs">
-            <div class="account-tab active" onclick="acTab(this, 0)">Login</div>
-            <div class="account-tab" onclick="acTab(this, 1)">Registro</div>
+            <div class="account-tab active" onclick="acTab(this, 'login')">Login</div>
+            <div class="account-tab" onclick="acTab(this, 'register')">Registro</div>
+            <div class="account-tab" onclick="acTab(this, 'forgot')">Recuperar</div>
           </div>
 
-          <div id="acLogin">
-            <div class="field" style="margin-bottom: 20px;">
+          <!-- LOGIN -->
+          <div class="ac-pane" id="acLogin">
+            <div id="loginNotice"></div>
+            <div class="field" style="margin-bottom: 16px;" data-required data-type="email">
               <label>Email</label>
-              <input type="email" placeholder="tu@email.com">
+              <input type="email" id="loginEmail" placeholder="tu@email.com">
+              <span class="err">Email inválido</span>
             </div>
-            <div class="field" style="margin-bottom: 24px;">
+            <div class="field" style="margin-bottom: 18px;" data-required>
               <label>Contraseña</label>
-              <input type="password" placeholder="••••••••">
+              <input type="password" id="loginPass" placeholder="••••••••">
+              <span class="err">Mínimo 6 caracteres</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; margin-bottom: 24px;">
               <label style="display: inline-flex; gap: 6px; cursor: pointer; color: var(--ink-soft);">
-                <input type="checkbox"> Recordarme
+                <input type="checkbox" id="loginRemember"> Recordarme
               </label>
-              <a style="color: var(--pen-red); cursor: pointer;">¿Olvidaste tu contraseña?</a>
+              <a style="color: var(--pen-red); cursor: pointer;" onclick="acTab(document.querySelectorAll('.account-tab')[2], 'forgot')">¿Olvidaste tu contraseña?</a>
             </div>
-            <button class="btn primary" style="width: 100%; justify-content: center;" onclick="mockLogin()">
+            <button class="btn primary" style="width: 100%; justify-content: center;" onclick="doLogin()">
               Iniciar sesión
             </button>
+          </div>
+
+          <!-- REGISTRO -->
+          <div class="ac-pane" id="acRegister" style="display:none;">
+            <div id="registerNotice"></div>
+            <div class="form-row">
+              <div class="field" data-required>
+                <label>Nombre</label>
+                <input type="text" id="regNombre" placeholder="Fabricio">
+                <span class="err">Falta nombre</span>
+              </div>
+              <div class="field" data-required>
+                <label>Apellido</label>
+                <input type="text" id="regApellido" placeholder="Pérez">
+                <span class="err">Falta apellido</span>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom: 16px;" data-required data-type="email">
+              <label>Email</label>
+              <input type="email" id="regEmail" placeholder="tu@email.com">
+              <span class="err">Email inválido</span>
+            </div>
+            <div class="form-row">
+              <div class="field" data-required data-type="pass">
+                <label>Contraseña</label>
+                <input type="password" id="regPass" placeholder="••••••••">
+                <span class="err">Mínimo 6 caracteres</span>
+              </div>
+              <div class="field" data-required>
+                <label>Confirma</label>
+                <input type="password" id="regPass2" placeholder="••••••••">
+                <span class="err">No coincide</span>
+              </div>
+            </div>
+            <div style="font-family: var(--mono); font-size: 11px; margin: 12px 0 22px; color: var(--ink-soft);">
+              <label style="display: inline-flex; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="regTerms"> Acepto los <a style="color: var(--pen-red); cursor: pointer;">términos y condiciones</a>
+              </label>
+            </div>
+            <button class="btn primary" style="width: 100%; justify-content: center;" onclick="doRegister()">
+              Crear cuenta
+            </button>
+          </div>
+
+          <!-- RECUPERAR -->
+          <div class="ac-pane" id="acForgot" style="display:none;">
+            <div id="forgotNotice"></div>
+            <p style="font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-bottom: 18px;">
+              Ingresa tu email y te enviaremos un link para restablecer tu contraseña (simulado en este prototipo).
+            </p>
+            <div class="field" style="margin-bottom: 22px;" data-required data-type="email">
+              <label>Email</label>
+              <input type="email" id="forgotEmail" placeholder="tu@email.com">
+              <span class="err">Email inválido</span>
+            </div>
+            <button class="btn primary" style="width: 100%; justify-content: center;" onclick="doForgot()">
+              Enviar link de recuperación
+            </button>
+          </div>
+        </div>
+
+        <!-- LOGGED IN: dashboard -->
+        <div class="account-card" id="acUser" style="display:none; width: 540px;">
+          <h2 id="acUserName">Hola, gamer.</h2>
+          <p class="account-sub" id="acUserMail">tu@email.com</p>
+
+          <div class="pd-spec-list" style="margin: 24px 0 28px;">
+            <li><span style="font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);">Pedidos</span><b id="acStatOrders">0</b></li>
+            <li><span style="font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);">Favoritos</span><b id="acStatFavs">0</b></li>
+            <li><span style="font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);">En carrito</span><b id="acStatCart">0</b></li>
+            <li><span style="font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint);">Total gastado</span><b id="acStatSpent">$0</b></li>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn" style="width: 100%; justify-content: center;" onclick="navigate('orders')">Ver mis pedidos</button>
+            <button class="btn ghost" style="width: 100%; justify-content: center;" onclick="navigate('wishlist')">Mis favoritos</button>
+            <button class="btn ghost" style="width: 100%; justify-content: center; border-color: var(--pen-red); color: var(--pen-red);" onclick="logout()">Cerrar sesión</button>
           </div>
         </div>
 
         <div class="annotation" style="top: 100px; right: 200px;">
           <span class="num">06</span>
-          Auth simulado · sin backend real<br>todo persiste en <b>localStorage</b>
+          Auth simulado · 3 panes<br>(login/registro/recuperar)<br>persiste en <b>localStorage</b>
         </div>
         <div class="arrow blue" style="top: 130px; right: 360px;">
           <svg width="120" height="60">
@@ -2609,7 +3472,8 @@ body.notes-off .legend { display: none; }
             <li><a onclick="navigate('cuenta')">Login</a></li>
             <li><a onclick="navigate('cuenta')">Registro</a></li>
             <li><a onclick="navigate('cart')">Carrito</a></li>
-            <li><a>Mis pedidos</a></li>
+            <li><a onclick="navigate('orders')">Mis pedidos</a></li>
+            <li><a onclick="navigate('wishlist')">Favoritos</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -2636,229 +3500,1437 @@ body.notes-off .legend { display: none; }
 
 <script>
 /* ═══════════════════════════════════════════════
-   PRODUCT DATA
+   PRODUCT DATA — enriquecido
 ═══════════════════════════════════════════════ */
 const PRODUCTS = [
-  { id: 'h1', cat: 'Hardware',    name: 'RTX 4060 Ti 8GB ZOTAC',          price: 11999, was: 14999, badge: 'HOT' },
-  { id: 'h2', cat: 'Hardware',    name: 'Ryzen 7 7800X3D AMD',             price: 9499,  was: null,  badge: null },
-  { id: 'h3', cat: 'Hardware',    name: 'Corsair DDR5 32GB 6000MHz',       price: 3299,  was: null,  badge: null },
-  { id: 'h4', cat: 'Hardware',    name: 'Samsung 980 Pro 2TB NVMe',        price: 4499,  was: 5299,  badge: 'SALE' },
-  { id: 'm1', cat: 'Monitores',   name: 'Samsung Odyssey G5 27"',          price: 5899,  was: null,  badge: 'NEW' },
-  { id: 'm2', cat: 'Monitores',   name: 'LG UltraGear 32" 4K',             price: 12999, was: 15499, badge: null },
-  { id: 'm3', cat: 'Monitores',   name: 'ASUS ROG Swift 240Hz',            price: 8999,  was: null,  badge: null },
-  { id: 'p1', cat: 'Periféricos', name: 'Logitech G Pro X Superlight 2',   price: 3299,  was: null,  badge: 'HOT' },
-  { id: 'p2', cat: 'Periféricos', name: 'Razer BlackWidow V4 Pro',         price: 4799,  was: null,  badge: null },
-  { id: 'p3', cat: 'Periféricos', name: 'HyperX Cloud III Wireless',       price: 3499,  was: 3999,  badge: 'SALE' },
-  { id: 'p4', cat: 'Periféricos', name: 'Logitech G502 X Plus',            price: 2999,  was: null,  badge: null },
-  { id: 'h5', cat: 'Hardware',    name: 'NZXT H7 Flow Black',              price: 2799,  was: null,  badge: null },
+  {
+    id: 'h1', cat: 'Hardware', sub: 'GPU', brand: 'ZOTAC',
+    name: 'RTX 4060 Ti 8GB ZOTAC',
+    price: 11999, was: 14999, badge: 'HOT',
+    stock: 12, rating: 4.8, reviews: 247, added: 12,
+    desc: 'GPU de gama media-alta con arquitectura Ada Lovelace. DLSS 3, Ray Tracing de tercera generación y consumo contenido. Ideal para 1440p en alto rendimiento o 4K con DLSS activo.',
+    specs: [['Arquitectura','Ada Lovelace'],['Memoria','8GB GDDR6'],['CUDA Cores','4352'],['Boost Clock','2535 MHz'],['TGP','160 W'],['Salidas','3x DP 1.4 + HDMI 2.1']],
+    icon: 'gpu', tags: ['gaming','streaming','creator']
+  },
+  {
+    id: 'h2', cat: 'Hardware', sub: 'CPU', brand: 'AMD',
+    name: 'Ryzen 7 7800X3D AMD',
+    price: 9499, was: null, badge: null,
+    stock: 7, rating: 4.9, reviews: 412, added: 9,
+    desc: 'El procesador definitivo para gaming. 8 núcleos Zen 4 con 96MB de caché 3D V-Cache. Domina los benchmarks de 1080p y 1440p competitivo.',
+    specs: [['Núcleos / Hilos','8 / 16'],['Boost','5.0 GHz'],['Caché L3','96 MB (3D V-Cache)'],['Socket','AM5'],['TDP','120 W'],['IGP','AMD Radeon Graphics']],
+    icon: 'cpu', tags: ['gaming','work']
+  },
+  {
+    id: 'h3', cat: 'Hardware', sub: 'RAM', brand: 'Corsair',
+    name: 'Corsair DDR5 32GB 6000MHz',
+    price: 3299, was: null, badge: null,
+    stock: 25, rating: 4.7, reviews: 188, added: 6,
+    desc: 'Kit de memoria de alto rendimiento con perfiles XMP/EXPO listos para usar. Latencias bajas y disipador de aluminio cepillado.',
+    specs: [['Capacidad','2x16 GB'],['Velocidad','6000 MT/s'],['Latencia','CL30'],['Voltaje','1.35 V'],['Perfil','EXPO + XMP 3.0'],['RGB','Sí · iCUE']],
+    icon: 'ram', tags: ['gaming','work','creator']
+  },
+  {
+    id: 'h4', cat: 'Hardware', sub: 'SSD', brand: 'Samsung',
+    name: 'Samsung 980 Pro 2TB NVMe',
+    price: 4499, was: 5299, badge: 'SALE',
+    stock: 18, rating: 4.9, reviews: 1023, added: 4,
+    desc: 'Almacenamiento PCIe 4.0 ultrarrápido. Ideal como boot drive o caché de juegos AAA con DirectStorage.',
+    specs: [['Interfaz','PCIe 4.0 x4 NVMe'],['Lectura','7,000 MB/s'],['Escritura','5,100 MB/s'],['Resistencia','1,200 TBW'],['Form factor','M.2 2280'],['DRAM','LPDDR4']],
+    icon: 'ssd', tags: ['gaming','work','creator','streaming']
+  },
+  {
+    id: 'h5', cat: 'Hardware', sub: 'Gabinete', brand: 'NZXT',
+    name: 'NZXT H7 Flow Black',
+    price: 2799, was: null, badge: null,
+    stock: 10, rating: 4.6, reviews: 156, added: 3,
+    desc: 'Gabinete mid-tower con frente perforado para máximo airflow. Cable management premium y ventana lateral de cristal templado.',
+    specs: [['Form factor','Mid-tower ATX'],['Material','Acero + Vidrio'],['Fans incluidos','2 x 140 mm'],['Soporte GPU','Hasta 410 mm'],['Cooler CPU','Hasta 185 mm'],['I/O','USB-C + 2 USB-A']],
+    icon: 'case', tags: ['gaming','work','creator']
+  },
+  {
+    id: 'h6', cat: 'Hardware', sub: 'Fuente', brand: 'Corsair',
+    name: 'Corsair RM850e 850W 80+ Gold',
+    price: 2499, was: null, badge: null,
+    stock: 0, rating: 4.7, reviews: 92, added: 5,
+    desc: 'Fuente totalmente modular con certificación 80+ Gold. Cables flat-flex y ventilador silencioso ZeroRPM en cargas bajas.',
+    specs: [['Potencia','850 W'],['Eficiencia','80+ Gold'],['Modular','Total'],['Conector GPU','12VHPWR (PCIe 5.0)'],['Garantía','7 años'],['Ventilador','120 mm ZeroRPM']],
+    icon: 'psu', tags: ['gaming','creator']
+  },
+  {
+    id: 'h7', cat: 'Hardware', sub: 'GPU', brand: 'ASUS',
+    name: 'ASUS TUF RTX 4070 12GB',
+    price: 14999, was: 16499, badge: 'NEW',
+    stock: 4, rating: 4.8, reviews: 78, added: 1,
+    desc: 'Triple ventilador, eje militar y blindaje extra. La RTX 4070 lista para 1440p ultra y 4K con DLSS 3.5.',
+    specs: [['Arquitectura','Ada Lovelace'],['Memoria','12GB GDDR6X'],['CUDA Cores','5888'],['Boost Clock','2505 MHz'],['TGP','200 W'],['Salidas','3x DP 1.4 + HDMI 2.1']],
+    icon: 'gpu', tags: ['gaming','streaming','creator']
+  },
+  {
+    id: 'h8', cat: 'Hardware', sub: 'CPU', brand: 'Intel',
+    name: 'Intel Core i7-14700K',
+    price: 8999, was: null, badge: null,
+    stock: 5, rating: 4.7, reviews: 165, added: 2,
+    desc: '20 núcleos híbridos (8P+12E), boost a 5.6 GHz. Excelente balance gaming + productividad para streamers y editores.',
+    specs: [['Núcleos / Hilos','20 / 28'],['Boost','5.6 GHz'],['Caché L3','33 MB'],['Socket','LGA 1700'],['TDP','125 W'],['IGP','UHD Graphics 770']],
+    icon: 'cpu', tags: ['gaming','streaming','creator','work']
+  },
+  {
+    id: 'm1', cat: 'Monitores', sub: 'Monitor', brand: 'Samsung',
+    name: 'Samsung Odyssey G5 27"',
+    price: 5899, was: null, badge: 'NEW',
+    stock: 14, rating: 4.7, reviews: 320, added: 1,
+    desc: 'Curvatura 1000R, panel VA QHD a 165 Hz. La inmersión gaming sin gastar de más.',
+    specs: [['Tamaño','27"'],['Resolución','QHD 2560×1440'],['Refresh','165 Hz'],['Respuesta','1 ms MPRT'],['Panel','VA curvo 1000R'],['HDR','HDR10']],
+    icon: 'monitor', tags: ['gaming','streaming']
+  },
+  {
+    id: 'm2', cat: 'Monitores', sub: 'Monitor', brand: 'LG',
+    name: 'LG UltraGear 32" 4K',
+    price: 12999, was: 15499, badge: null,
+    stock: 6, rating: 4.8, reviews: 412, added: 5,
+    desc: 'Monitor 4K para creadores que también juegan. IPS Nano, 144 Hz reales y cobertura sRGB 99%.',
+    specs: [['Tamaño','32"'],['Resolución','4K UHD'],['Refresh','144 Hz'],['Respuesta','1 ms GtG'],['Panel','Nano IPS'],['HDR','DisplayHDR 600']],
+    icon: 'monitor', tags: ['gaming','creator','work']
+  },
+  {
+    id: 'm3', cat: 'Monitores', sub: 'Monitor', brand: 'ASUS',
+    name: 'ASUS ROG Swift 240Hz',
+    price: 8999, was: null, badge: null,
+    stock: 9, rating: 4.6, reviews: 215, added: 7,
+    desc: 'Monitor competitivo de 27" QHD a 240 Hz. Pensado para shooters donde cada milisegundo cuenta.',
+    specs: [['Tamaño','27"'],['Resolución','QHD 2560×1440'],['Refresh','240 Hz'],['Respuesta','1 ms GtG'],['Panel','Fast IPS'],['HDR','HDR400']],
+    icon: 'monitor', tags: ['gaming']
+  },
+  {
+    id: 'm4', cat: 'Monitores', sub: 'Monitor', brand: 'Dell',
+    name: 'Dell UltraSharp 4K 27"',
+    price: 9499, was: null, badge: null,
+    stock: 11, rating: 4.7, reviews: 188, added: 8,
+    desc: 'El estándar para fotografía y diseño. IPS Black calibrado de fábrica, 100% sRGB / 95% DCI-P3.',
+    specs: [['Tamaño','27"'],['Resolución','4K UHD'],['Refresh','60 Hz'],['Color','100% sRGB / 95% P3'],['Panel','IPS Black'],['Conectividad','USB-C 90W']],
+    icon: 'monitor', tags: ['creator','work']
+  },
+  {
+    id: 'p1', cat: 'Periféricos', sub: 'Mouse', brand: 'Logitech',
+    name: 'Logitech G Pro X Superlight 2',
+    price: 3299, was: null, badge: 'HOT',
+    stock: 22, rating: 4.9, reviews: 540, added: 2,
+    desc: 'El mouse competitivo más ligero del mercado. Sensor HERO 2 a 32K DPI y 95 horas de batería.',
+    specs: [['Peso','60 g'],['Sensor','HERO 2 · 32,000 DPI'],['Conectividad','LIGHTSPEED + USB-C'],['Botones','5 programables'],['Switches','Lightforce ópticos'],['Batería','95 horas']],
+    icon: 'mouse', tags: ['gaming','streaming']
+  },
+  {
+    id: 'p2', cat: 'Periféricos', sub: 'Teclado', brand: 'Razer',
+    name: 'Razer BlackWidow V4 Pro',
+    price: 4799, was: null, badge: null,
+    stock: 13, rating: 4.7, reviews: 287, added: 4,
+    desc: 'Teclado mecánico tope de gama con 8 teclas macro, rueda de comando y switches Razer Green clicky.',
+    specs: [['Switches','Razer Green táctil'],['Layout','Full + macro'],['Iluminación','Razer Chroma'],['Reposamuñecas','Magnético'],['Polling','8000 Hz'],['USB pass','Sí']],
+    icon: 'kb', tags: ['gaming','streaming']
+  },
+  {
+    id: 'p3', cat: 'Periféricos', sub: 'Audio', brand: 'HyperX',
+    name: 'HyperX Cloud III Wireless',
+    price: 3499, was: 3999, badge: 'SALE',
+    stock: 17, rating: 4.6, reviews: 341, added: 3,
+    desc: 'Audífonos inalámbricos con 120h de batería. Drivers angulados de 53mm y micro de calidad broadcast.',
+    specs: [['Drivers','53 mm angulados'],['Conectividad','2.4G + USB-C'],['Batería','120 horas'],['Micrófono','Cardioide desmontable'],['Almohadillas','Memory foam'],['Compatibilidad','PC, PS5, Switch']],
+    icon: 'headset', tags: ['gaming','streaming']
+  },
+  {
+    id: 'p4', cat: 'Periféricos', sub: 'Mouse', brand: 'Logitech',
+    name: 'Logitech G502 X Plus',
+    price: 2999, was: null, badge: null,
+    stock: 15, rating: 4.7, reviews: 410, added: 6,
+    desc: 'Versión inalámbrica RGB del clásico G502. Switches ópticos LIGHTFORCE y peso ajustable.',
+    specs: [['Peso','106 g'],['Sensor','HERO · 25,600 DPI'],['Conectividad','LIGHTSPEED'],['Botones','13 programables'],['Switches','LIGHTFORCE'],['Batería','120 horas']],
+    icon: 'mouse', tags: ['gaming','work']
+  },
+  {
+    id: 'p5', cat: 'Periféricos', sub: 'Teclado', brand: 'Keychron',
+    name: 'Keychron Q1 Pro QMK',
+    price: 4199, was: null, badge: 'NEW',
+    stock: 8, rating: 4.8, reviews: 124, added: 1,
+    desc: 'Teclado mecánico inalámbrico de aluminio con QMK/VIA. Hot-swap, gasket-mount y silencioso.',
+    specs: [['Switches','Hot-swap (MX)'],['Layout','75% / TKL'],['Material','Aluminio CNC'],['Conectividad','BT + 2.4G + cable'],['Firmware','QMK / VIA'],['Batería','300 horas']],
+    icon: 'kb', tags: ['work','creator']
+  },
+  {
+    id: 'p6', cat: 'Periféricos', sub: 'Audio', brand: 'Audio-Technica',
+    name: 'Audio-Technica ATH-M50x',
+    price: 2499, was: null, badge: null,
+    stock: 19, rating: 4.9, reviews: 1820, added: 11,
+    desc: 'El estándar del estudio. Drivers de 45 mm y respuesta de frecuencia plana para mezcla pro.',
+    specs: [['Drivers','45 mm CCAW'],['Tipo','Cerrado over-ear'],['Impedancia','38 Ω'],['Cables','3 desmontables'],['Pliegue','Plegable'],['Uso','Estudio / mezcla']],
+    icon: 'headset', tags: ['creator','work']
+  },
+  {
+    id: 'p7', cat: 'Periféricos', sub: 'Mouse', brand: 'Razer',
+    name: 'Razer Viper V3 Pro',
+    price: 3899, was: null, badge: null,
+    stock: 6, rating: 4.8, reviews: 196, added: 2,
+    desc: 'Mouse esports ligero con sensor Focus Pro 35K. Polling rate de 8000 Hz y cuerpo simétrico.',
+    specs: [['Peso','54 g'],['Sensor','Focus Pro · 35,000 DPI'],['Conectividad','HyperSpeed'],['Polling','8000 Hz'],['Switches','Optical Gen-3'],['Batería','95 horas']],
+    icon: 'mouse', tags: ['gaming']
+  },
 ];
+
+const PROMO_CODES = {
+  TECH10: { type: 'percent', value: 10, label: 'TECH10 — 10% off' },
+  GAMER20: { type: 'percent', value: 20, label: 'GAMER20 — 20% off' },
+  ENVIO:   { type: 'shipping', value: 0,  label: 'ENVIO — envío gratis' },
+};
+
+const SHIPPING_LABELS = { express: 'Express CDMX · 24h', standard: 'Estándar 3-5 días', pickup: 'Recoger en tienda' };
 
 /* ═══════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════ */
-let cart = JSON.parse(localStorage.getItem('proto_cart') || '[]');
+const state = {
+  cart:       JSON.parse(localStorage.getItem('proto_cart') || '[]'),
+  wishlist:   JSON.parse(localStorage.getItem('proto_wishlist') || '[]'),
+  orders:     JSON.parse(localStorage.getItem('proto_orders') || '[]'),
+  recent:     JSON.parse(localStorage.getItem('proto_recent') || '[]'),
+  user:       JSON.parse(localStorage.getItem('proto_user') || 'null'),
+  promo:      JSON.parse(localStorage.getItem('proto_promo') || 'null'),
+  shipping:   localStorage.getItem('proto_shipping') || 'express',
+  filters: {
+    cats: new Set(),
+    brands: new Set(),
+    stock: new Set(),
+    priceMin: 2000,
+    priceMax: 20000,
+    search: '',
+  },
+  catalogPage: 1,
+  catalogSort: 'relevance',
+  featuredFilter: 'all',
+  budget: 20000,
+  useCase: 'gaming',
+  currentBuild: [],
+  currentProductId: null,
+  checkoutStep: 1,
+  // simulado para evitar Date toString diff
+  today: new Date(),
+};
+
+const PER_PAGE = 6;
 
 /* ═══════════════════════════════════════════════
-   RENDER GRID
+   HELPERS
 ═══════════════════════════════════════════════ */
-function fmt(n) { return '$' + n.toLocaleString('en-US'); }
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtFull = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const escapeHtml = str => (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const findProduct = id => PRODUCTS.find(p => p.id === id);
+const persist = (k, v) => localStorage.setItem('proto_' + k, JSON.stringify(v));
 
+function stockOf(p) {
+  if (p.stock === 0) return { cls: 'out',  label: 'Agotado' };
+  if (p.stock <= 5)  return { cls: 'low',  label: 'Últimos · ' + p.stock };
+  return { cls: '', label: 'En stock' };
+}
+
+function starsHand(rating) {
+  // 5 estrellas, redondeadas a 0.5
+  const full = Math.floor(rating);
+  const half = (rating - full) >= 0.5;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half?1:0));
+}
+
+/* Generación determinística de reseñas a partir del id */
+const REVIEW_NAMES = ['Carlos M.', 'Ana L.', 'Diego R.', 'Sofía P.', 'Luis T.', 'María G.', 'Pedro S.', 'Lucía V.', 'Bruno J.', 'Camila R.'];
+const REVIEW_CITIES = ['CDMX', 'GDL', 'MTY', 'QRO', 'PUE', 'TIJ'];
+const REVIEW_BODIES = [
+  'Llegó en perfectas condiciones, súper rápido. La calidad supera lo que esperaba para el precio.',
+  'Excelente atención y empaque cuidado. Lo recomendaría sin pensarlo a otro gamer.',
+  'Cumple todo lo prometido. Después de un mes de uso intensivo no tengo queja alguna.',
+  'Justo lo que estaba buscando. Funciona perfecto con el resto de mi setup.',
+  'Vale cada peso. La diferencia frente a mi pieza anterior fue brutal.',
+  'Pequeños detalles me hicieron dudar al principio, pero el rendimiento real es muy bueno.',
+];
+function reviewsFor(p) {
+  const seed = p.id.charCodeAt(0) + p.id.charCodeAt(1);
+  const out = [];
+  const count = Math.min(4, 1 + (seed % 4));
+  for (let i = 0; i < count; i++) {
+    const idx = (seed + i * 7) % REVIEW_NAMES.length;
+    const cidx = (seed + i * 3) % REVIEW_CITIES.length;
+    const bidx = (seed + i * 11) % REVIEW_BODIES.length;
+    const days = 3 + ((seed + i*13) % 90);
+    const stars = Math.max(3, Math.min(5, Math.round(p.rating + (i % 2 === 0 ? 0 : -0.4))));
+    out.push({
+      who: REVIEW_NAMES[idx] + ' · ' + REVIEW_CITIES[cidx],
+      when: 'hace ' + days + ' días',
+      stars,
+      body: REVIEW_BODIES[bidx]
+    });
+  }
+  return out;
+}
+
+/* ═══════════════════════════════════════════════
+   PRODUCT ICONS — SVG sketched
+═══════════════════════════════════════════════ */
+const ICONS = {
+  gpu:     `<svg viewBox="0 0 100 70"><rect x="6" y="14" width="88" height="36" rx="3"/><rect class="fill" x="14" y="20" width="20" height="20" rx="2"/><rect class="fill" x="42" y="20" width="20" height="20" rx="2"/><circle class="accent" cx="24" cy="30" r="6"/><circle class="accent" cx="52" cy="30" r="6"/><line x1="76" y1="20" x2="88" y2="20"/><line x1="76" y1="26" x2="88" y2="26"/><line x1="76" y1="32" x2="88" y2="32"/><rect x="20" y="50" width="60" height="8"/><line x1="14" y1="58" x2="24" y2="64" class="accent"/></svg>`,
+  cpu:     `<svg viewBox="0 0 100 70"><rect x="22" y="14" width="56" height="42" rx="2" class="fill"/><rect x="32" y="22" width="36" height="26"/><line x1="22" y1="22" x2="14" y2="22"/><line x1="22" y1="30" x2="14" y2="30"/><line x1="22" y1="38" x2="14" y2="38"/><line x1="22" y1="46" x2="14" y2="46"/><line x1="86" y1="22" x2="78" y2="22"/><line x1="86" y1="30" x2="78" y2="30"/><line x1="86" y1="38" x2="78" y2="38"/><line x1="86" y1="46" x2="78" y2="46"/><circle class="accent" cx="50" cy="35" r="4"/></svg>`,
+  ram:     `<svg viewBox="0 0 100 70"><rect x="6" y="22" width="88" height="20"/><rect x="10" y="26" width="6" height="12" class="fill"/><rect x="20" y="26" width="6" height="12" class="fill"/><rect x="30" y="26" width="6" height="12" class="fill"/><rect x="40" y="26" width="6" height="12" class="fill"/><rect x="50" y="26" width="6" height="12" class="fill"/><rect x="60" y="26" width="6" height="12" class="fill"/><rect x="70" y="26" width="6" height="12" class="fill"/><rect x="80" y="26" width="6" height="12" class="fill"/><line x1="14" y1="46" x2="86" y2="46"/><line class="accent" x1="14" y1="48" x2="22" y2="48"/><line class="accent" x1="30" y1="48" x2="38" y2="48"/></svg>`,
+  ssd:     `<svg viewBox="0 0 100 70"><rect x="14" y="22" width="72" height="26" rx="2"/><rect class="fill" x="20" y="28" width="14" height="14"/><rect class="fill" x="38" y="28" width="14" height="14"/><rect class="fill" x="56" y="28" width="14" height="14"/><circle class="accent" cx="78" cy="35" r="2.5"/><line x1="14" y1="48" x2="14" y2="56"/><line x1="86" y1="48" x2="86" y2="56"/></svg>`,
+  case:    `<svg viewBox="0 0 100 70"><rect x="22" y="6" width="50" height="58" rx="2"/><rect x="30" y="14" width="34" height="24" class="fill"/><line x1="30" y1="20" x2="64" y2="20"/><line x1="30" y1="28" x2="64" y2="28"/><circle x="58" cy="46" r="2" cx="58"/><rect x="30" y="44" width="34" height="14"/><circle class="accent" cx="44" cy="51" r="2"/></svg>`,
+  psu:     `<svg viewBox="0 0 100 70"><rect x="10" y="18" width="80" height="34" rx="2"/><circle class="fill" cx="36" cy="35" r="11"/><circle cx="36" cy="35" r="9"/><line x1="36" y1="26" x2="36" y2="44"/><line x1="27" y1="35" x2="45" y2="35"/><line x1="30" y1="29" x2="42" y2="41"/><line x1="42" y1="29" x2="30" y2="41"/><rect class="fill" x="56" y="26" width="26" height="6"/><rect class="fill" x="56" y="36" width="26" height="6"/><line class="accent" x1="56" y1="29" x2="68" y2="29"/></svg>`,
+  monitor: `<svg viewBox="0 0 100 70"><rect x="8" y="8" width="84" height="44" rx="2"/><line x1="14" y1="48" x2="86" y2="48"/><polygon class="fill" points="50,16 64,38 36,38" /><circle class="accent" cx="80" cy="14" r="1.5" /><line x1="40" y1="56" x2="60" y2="56"/><line x1="50" y1="52" x2="50" y2="56"/><rect x="34" y="56" width="32" height="4"/></svg>`,
+  mouse:   `<svg viewBox="0 0 100 70"><path d="M50 6 C 26 6, 16 22, 16 38 C 16 56, 28 64, 50 64 C 72 64, 84 56, 84 38 C 84 22, 74 6, 50 6 Z"/><line x1="50" y1="6" x2="50" y2="34"/><line x1="36" y1="20" x2="50" y2="20"/><circle class="accent" cx="50" cy="26" r="2"/><rect x="44" y="14" width="12" height="6" class="fill"/></svg>`,
+  kb:      `<svg viewBox="0 0 100 70"><rect x="6" y="20" width="88" height="34" rx="2"/><rect x="12" y="26" width="6" height="6" class="fill"/><rect x="22" y="26" width="6" height="6" class="fill"/><rect x="32" y="26" width="6" height="6" class="fill"/><rect x="42" y="26" width="6" height="6" class="fill"/><rect x="52" y="26" width="6" height="6" class="fill"/><rect x="62" y="26" width="6" height="6" class="fill"/><rect x="72" y="26" width="6" height="6" class="fill"/><rect x="82" y="26" width="6" height="6" class="fill"/><rect x="12" y="36" width="6" height="6" class="fill"/><rect x="22" y="36" width="6" height="6"/><rect x="32" y="36" width="6" height="6"/><rect x="42" y="36" width="6" height="6"/><rect x="52" y="36" width="6" height="6"/><rect x="62" y="36" width="6" height="6"/><rect x="72" y="36" width="6" height="6"/><rect class="accent" x="82" y="36" width="6" height="6"/><rect x="22" y="46" width="56" height="4"/></svg>`,
+  headset: `<svg viewBox="0 0 100 70"><path d="M16 38 C 16 18, 32 8, 50 8 C 68 8, 84 18, 84 38"/><rect x="10" y="36" width="14" height="22" rx="2" class="fill"/><rect x="76" y="36" width="14" height="22" rx="2" class="fill"/><line x1="10" y1="44" x2="24" y2="44"/><line x1="76" y1="44" x2="90" y2="44"/><path class="accent" d="M76 50 C 80 56, 80 60, 70 64"/></svg>`,
+};
+
+function productIconHTML(iconKey) {
+  return `<div class="prod-icon">${ICONS[iconKey] || ICONS.gpu}</div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   PRODUCT CARD
+═══════════════════════════════════════════════ */
 function prodCard(p) {
+  const isFav = state.wishlist.includes(p.id);
+  const stockInfo = stockOf(p);
+  const out = p.stock === 0;
   return `
-    <div class="prod-card" onclick="navigate('product','${p.id}','${escapeHtml(p.name)}',${p.price})">
+    <div class="prod-card ${out ? 'out-of-stock' : ''}" onclick="goToProduct('${p.id}')">
       ${p.badge ? `<span class="ribbon">${p.badge}</span>` : ''}
-      <button class="fav" onclick="event.stopPropagation();toggleFav(this)">
+      <button class="fav ${isFav ? 'on' : ''}" data-id="${p.id}" onclick="event.stopPropagation();toggleFav('${p.id}', this)" title="${isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
         <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
-      <div class="prod-img placeholder cross"><span class="label">${p.id}</span></div>
-      <div class="prod-cat">${p.cat}</div>
+      <div class="prod-img placeholder cross">${productIconHTML(p.icon)}</div>
+      <div class="prod-cat">${p.cat} · ${p.brand}</div>
       <div class="prod-name">${p.name}</div>
+      <div class="prod-rating"><span class="stars">${starsHand(p.rating)}</span> <span>${p.rating} · ${p.reviews}</span></div>
+      <div style="margin-bottom: 8px;"><span class="stock-pill ${stockInfo.cls}">${stockInfo.label}</span></div>
       <div class="prod-foot">
-        <div class="prod-price">${fmt(p.price)}</div>
-        <button class="prod-add" onclick="event.stopPropagation();addToCart('${p.id}','${escapeHtml(p.name)}',${p.price})" title="Agregar al carrito">
+        <div class="prod-price">${fmt(p.price)}${p.was ? ` <small style="font-family:var(--mono); font-size:10px; color:var(--ink-faint); text-decoration:line-through; font-weight:400;">${fmt(p.was)}</small>` : ''}</div>
+        <button class="prod-add" onclick="event.stopPropagation();addToCart('${p.id}')" title="${out ? 'Agotado' : 'Agregar al carrito'}" ${out?'disabled':''}>
           <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
     </div>`;
 }
 
-function escapeHtml(str) { return str.replace(/'/g, "\\'"); }
+function smallCard(p) {
+  return prodCard(p);
+}
 
+/* ═══════════════════════════════════════════════
+   FEATURED + CHIP FILTER
+═══════════════════════════════════════════════ */
 function renderFeatured() {
-  const grid = document.getElementById('featuredGrid');
-  grid.innerHTML = PRODUCTS.slice(0, 8).map(prodCard).join('');
-}
-function renderCatalog() {
-  const grid = document.getElementById('catalogGrid');
-  grid.innerHTML = PRODUCTS.map(prodCard).join('');
+  const grid = $('#featuredGrid');
+  let list = PRODUCTS.slice();
+  if (state.featuredFilter !== 'all') {
+    list = list.filter(p => p.cat.toLowerCase() === state.featuredFilter);
+  }
+  grid.innerHTML = list.slice(0, 8).map(prodCard).join('');
 }
 
-function toggleFav(el) {
-  el.classList.toggle('on');
+function setFeaturedChip(el, key) {
+  $$('.prod-controls .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.featuredFilter = key;
+  renderFeatured();
+}
+
+/* ═══════════════════════════════════════════════
+   CATALOG — filters / sort / search / pagination
+═══════════════════════════════════════════════ */
+function buildBrandFilters() {
+  const brands = [...new Set(PRODUCTS.map(p => p.brand))].sort();
+  const wrap = $('#brandGroup');
+  if (!wrap) return;
+  const heading = wrap.querySelector('h4').outerHTML;
+  wrap.innerHTML = heading + brands.map(b =>
+    `<label><input type="checkbox" data-filter="brand" value="${b}"> ${b}</label>`
+  ).join('');
+}
+
+function getCatalogList() {
+  const f = state.filters;
+  let list = PRODUCTS.slice();
+
+  if (f.cats.size)   list = list.filter(p => f.cats.has(p.cat));
+  if (f.brands.size) list = list.filter(p => f.brands.has(p.brand));
+  if (f.stock.has('instock')) list = list.filter(p => p.stock > 0);
+  if (f.stock.has('sale'))    list = list.filter(p => p.was != null);
+
+  list = list.filter(p => p.price >= f.priceMin && p.price <= f.priceMax);
+
+  if (f.search.trim()) {
+    const q = f.search.trim().toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.cat.toLowerCase().includes(q) ||
+      p.sub.toLowerCase().includes(q) ||
+      (p.tags||[]).some(t => t.includes(q))
+    );
+  }
+
+  switch (state.catalogSort) {
+    case 'price-asc':  list.sort((a,b) => a.price - b.price); break;
+    case 'price-desc': list.sort((a,b) => b.price - a.price); break;
+    case 'rating':     list.sort((a,b) => b.rating - a.rating); break;
+    case 'reviews':    list.sort((a,b) => b.reviews - a.reviews); break;
+    case 'newest':     list.sort((a,b) => a.added - b.added); break;
+    default: /* relevance: leave as-is */ break;
+  }
+  return list;
+}
+
+function applyFilters() {
+  const list = getCatalogList();
+  const total = list.length;
+  $('#catCount').textContent = total;
+
+  // pagination
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  if (state.catalogPage > totalPages) state.catalogPage = 1;
+  const start = (state.catalogPage - 1) * PER_PAGE;
+  const pageItems = list.slice(start, start + PER_PAGE);
+
+  const grid = $('#catalogGrid');
+  if (total === 0) {
+    grid.innerHTML = `
+      <div class="no-results" style="grid-column: 1/-1;">
+        <div class="nr-h">Sin resultados</div>
+        <p>Ajusta los filtros o limpia la búsqueda para ver más productos.</p>
+        <button class="btn ghost small" style="margin-top: 16px;" onclick="clearFilters()">Limpiar filtros</button>
+      </div>`;
+  } else {
+    grid.innerHTML = pageItems.map(prodCard).join('');
+  }
+
+  renderPagination(totalPages);
+  renderActiveFilterPills();
+}
+
+function renderPagination(totalPages) {
+  const bar = $('#paginationBar');
+  if (totalPages <= 1) { bar.innerHTML = ''; return; }
+  let html = '';
+  html += `<button class="chip" onclick="goPage(${state.catalogPage - 1})" ${state.catalogPage===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="chip ${i===state.catalogPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="chip" onclick="goPage(${state.catalogPage + 1})" ${state.catalogPage===totalPages?'disabled':''}>›</button>`;
+  bar.innerHTML = html;
+}
+
+function goPage(n) {
+  const list = getCatalogList();
+  const totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  state.catalogPage = Math.max(1, Math.min(totalPages, n));
+  applyFilters();
+  document.getElementById('view-catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderActiveFilterPills() {
+  const wrap = $('#activeFilters');
+  if (!wrap) return;
+  const f = state.filters;
+  const pills = [];
+  f.cats.forEach(c   => pills.push({ label: 'Cat: ' + c,    fn: `removeFilter('cats','${c}')` }));
+  f.brands.forEach(b => pills.push({ label: 'Marca: ' + b,  fn: `removeFilter('brands','${b}')` }));
+  f.stock.forEach(s  => pills.push({ label: s === 'instock' ? 'En stock' : 'En oferta', fn: `removeFilter('stock','${s}')` }));
+  if (f.priceMin > 2000 || f.priceMax < 20000) {
+    pills.push({ label: 'Precio: ' + fmt(f.priceMin) + '–' + fmt(f.priceMax), fn: `resetPriceRange()` });
+  }
+  if (f.search.trim()) pills.push({ label: 'Búsqueda: "' + f.search + '"', fn: `clearCatalogSearch()` });
+  wrap.innerHTML = pills.map(p => `<span class="filter-pill" onclick="${p.fn}">${escapeHtml(p.label)}</span>`).join('');
+}
+
+function removeFilter(group, value) {
+  if (group === 'cats')   state.filters.cats.delete(value);
+  if (group === 'brands') state.filters.brands.delete(value);
+  if (group === 'stock')  state.filters.stock.delete(value);
+  syncFilterCheckboxes();
+  state.catalogPage = 1;
+  applyFilters();
+}
+
+function resetPriceRange() {
+  state.filters.priceMin = 2000;
+  state.filters.priceMax = 20000;
+  $('#priceMin').value = 2000;
+  $('#priceMax').value = 20000;
+  $('#priceMinVal').textContent = fmt(2000);
+  $('#priceMaxVal').textContent = fmt(20000);
+  state.catalogPage = 1;
+  applyFilters();
+}
+
+function clearFilters() {
+  state.filters.cats.clear();
+  state.filters.brands.clear();
+  state.filters.stock.clear();
+  state.filters.priceMin = 2000;
+  state.filters.priceMax = 20000;
+  state.filters.search = '';
+  state.catalogPage = 1;
+  syncFilterCheckboxes();
+  $('#priceMin').value = 2000;
+  $('#priceMax').value = 20000;
+  $('#priceMinVal').textContent = fmt(2000);
+  $('#priceMaxVal').textContent = fmt(20000);
+  $('#catalogSearchInput').value = '';
+  $('#catSearch').classList.remove('has-value');
+  applyFilters();
+}
+
+function clearCatalogSearch() {
+  state.filters.search = '';
+  $('#catalogSearchInput').value = '';
+  $('#catSearch').classList.remove('has-value');
+  state.catalogPage = 1;
+  applyFilters();
+}
+
+function syncFilterCheckboxes() {
+  $$('.cat-side input[data-filter]').forEach(cb => {
+    const g = cb.dataset.filter, v = cb.value;
+    let setRef;
+    if (g === 'cat')   setRef = state.filters.cats;
+    if (g === 'brand') setRef = state.filters.brands;
+    if (g === 'stock') setRef = state.filters.stock;
+    cb.checked = setRef ? setRef.has(v) : false;
+  });
+}
+
+function bindFilters() {
+  $$('.cat-side input[data-filter]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const g = cb.dataset.filter, v = cb.value;
+      let setRef;
+      if (g === 'cat')   setRef = state.filters.cats;
+      if (g === 'brand') setRef = state.filters.brands;
+      if (g === 'stock') setRef = state.filters.stock;
+      if (!setRef) return;
+      cb.checked ? setRef.add(v) : setRef.delete(v);
+      state.catalogPage = 1;
+      applyFilters();
+    });
+  });
+
+  const min = $('#priceMin'), max = $('#priceMax');
+  function priceUpdate() {
+    let lo = parseInt(min.value), hi = parseInt(max.value);
+    if (lo > hi) { [lo, hi] = [hi, lo]; }
+    state.filters.priceMin = lo;
+    state.filters.priceMax = hi;
+    $('#priceMinVal').textContent = fmt(lo);
+    $('#priceMaxVal').textContent = fmt(hi);
+    state.catalogPage = 1;
+    applyFilters();
+  }
+  min.addEventListener('input', priceUpdate);
+  max.addEventListener('input', priceUpdate);
+
+  const search = $('#catalogSearchInput');
+  search.addEventListener('input', () => {
+    state.filters.search = search.value;
+    $('#catSearch').classList.toggle('has-value', !!search.value);
+    state.catalogPage = 1;
+    applyFilters();
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   GLOBAL SEARCH (navbar)
+═══════════════════════════════════════════════ */
+function bindGlobalSearch() {
+  const input = $('#searchInput');
+  const results = $('#searchResults');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { results.classList.remove('on'); return; }
+    const hits = PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.sub.toLowerCase().includes(q) ||
+      p.cat.toLowerCase().includes(q)
+    ).slice(0, 6);
+    if (hits.length === 0) {
+      results.innerHTML = `<div class="sr-empty">Sin coincidencias para "${escapeHtml(q)}"<br><a style="color:var(--pen-red); cursor:pointer;" onclick="searchInCatalog('${escapeHtml(q)}')">Buscar en el catálogo →</a></div>`;
+    } else {
+      results.innerHTML = hits.map(p =>
+        `<div class="sr-item" onclick="goToProduct('${p.id}')">
+          <div class="sr-img">${productIconHTML(p.icon)}</div>
+          <div>
+            <div class="sr-name">${p.name}</div>
+            <div class="sr-cat">${p.cat} · ${p.brand}</div>
+          </div>
+          <div class="sr-price">${fmt(p.price)}</div>
+        </div>`
+      ).join('');
+    }
+    results.classList.add('on');
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      searchInCatalog(input.value.trim());
+    }
+    if (e.key === 'Escape') { input.value = ''; results.classList.remove('on'); input.blur(); }
+  });
+  document.addEventListener('click', (e) => {
+    if (!$('#navSearch').contains(e.target)) results.classList.remove('on');
+  });
+  // tecla / hace focus
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+}
+
+function searchInCatalog(q) {
+  $('#searchResults').classList.remove('on');
+  $('#searchInput').value = '';
+  state.filters.search = q;
+  state.catalogPage = 1;
+  navigate('catalogo');
+  setTimeout(() => {
+    $('#catalogSearchInput').value = q;
+    $('#catSearch').classList.add('has-value');
+    applyFilters();
+  }, 30);
 }
 
 /* ═══════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════ */
-function navigate(view, arg, name, price) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+function navigate(view, arg) {
+  $$('.view').forEach(v => v.classList.remove('active'));
+  $$('.nav-links a').forEach(a => a.classList.remove('active'));
 
   let target = view;
   if (view === 'product') {
-    target = 'product';
-    if (name) document.getElementById('pdName').textContent = name;
-    if (name) document.getElementById('pdBreadName').textContent = name;
-    if (name) document.getElementById('pdImgLabel').textContent = name + ' · vista 1';
-    if (price) document.getElementById('pdPrice').textContent = fmt(price);
-    document.getElementById('pdQty').dataset.id = arg || 'h1';
-    document.getElementById('pdQty').dataset.name = name || 'RTX 4060 Ti';
-    document.getElementById('pdQty').dataset.price = price || 11999;
+    renderProduct(arg);
+  }
+  if (view === 'cart')      renderCart();
+  if (view === 'wishlist')  renderWishlist();
+  if (view === 'orders')    renderOrders();
+  if (view === 'cuenta')    refreshAccount();
+  if (view === 'checkout')  initCheckout();
+  if (view === 'home')      { renderFeatured(); renderRecent(); }
+  if (view === 'catalogo' && arg) {
+    // categoría preseleccionada desde home
+    state.filters.cats.clear();
+    if (arg === 'monitores') state.filters.cats.add('Monitores');
+    if (arg === 'hardware')  state.filters.cats.add('Hardware');
+    if (arg === 'perifericos') state.filters.cats.add('Periféricos');
+    syncFilterCheckboxes();
+    state.catalogPage = 1;
+    applyFilters();
+  } else if (view === 'catalogo') {
+    applyFilters();
   }
 
-  const el = document.getElementById('view-' + target);
+  const el = $('#view-' + target);
   if (el) el.classList.add('active');
 
-  const link = document.querySelector('.nav-links a[data-page="' + view + '"]');
+  const link = $('.nav-links a[data-page="' + view + '"]');
   if (link) link.classList.add('active');
 
   window.scrollTo({ top: 0, behavior: 'instant' });
+}
 
-  if (view === 'cart') renderCart();
+function goToProduct(id) {
+  pushRecent(id);
+  navigate('product', id);
 }
 
 /* ═══════════════════════════════════════════════
    CART
 ═══════════════════════════════════════════════ */
-function addToCart(id, name, price, qty = 1) {
-  const existing = cart.find(it => it.id === id);
+function addToCart(id, qtyOverride) {
+  const p = findProduct(id);
+  if (!p) return;
+  if (p.stock === 0) { toast('Producto agotado'); return; }
+  const qty = qtyOverride || 1;
+  const existing = state.cart.find(it => it.id === id);
   if (existing) existing.qty += qty;
-  else cart.push({ id, name, price, qty });
+  else state.cart.push({ id, qty });
   saveCart();
-  updateBadge();
-  toast(`Agregado: ${name}`);
+  toast('Agregado: ' + p.name);
 }
 
 function saveCart() {
-  localStorage.setItem('proto_cart', JSON.stringify(cart));
+  persist('cart', state.cart);
+  updateBadge();
+  if ($('#view-cart').classList.contains('active')) renderCart();
 }
 
 function updateBadge() {
-  const total = cart.reduce((s, it) => s + it.qty, 0);
-  document.getElementById('cartBadge').textContent = total;
-  document.getElementById('cartBadge').style.display = total > 0 ? 'inline-flex' : 'inline-flex';
+  const total = state.cart.reduce((s, it) => s + it.qty, 0);
+  const badge = $('#cartBadge');
+  badge.textContent = total;
+  badge.style.display = 'inline-flex';
+}
+
+function updateWishBadge() {
+  const total = state.wishlist.length;
+  const b = $('#wishBadge');
+  b.textContent = total;
+  b.style.display = total > 0 ? 'inline-flex' : 'none';
+}
+
+function cartTotals() {
+  const items = state.cart.map(it => ({ ...it, p: findProduct(it.id) })).filter(it => it.p);
+  const sub = items.reduce((s, it) => s + it.p.price * it.qty, 0);
+  let ship = sub > 1500 ? 0 : 120;
+  let discount = 0;
+  if (state.promo) {
+    const code = PROMO_CODES[state.promo];
+    if (code) {
+      if (code.type === 'percent') discount = sub * (code.value / 100);
+      if (code.type === 'shipping') ship = 0;
+    }
+  }
+  const subAfterDisc = Math.max(0, sub - discount);
+  const tax = subAfterDisc * 0.16;
+  const total = subAfterDisc + ship + tax;
+  return { items, sub, ship, discount, tax, total };
 }
 
 function renderCart() {
-  const list = document.getElementById('cartList');
-  if (cart.length === 0) {
+  const list = $('#cartList');
+  if (state.cart.length === 0) {
     list.innerHTML = `
       <div style="padding: 60px 30px; text-align: center; font-family: var(--mono); color: var(--ink-soft);">
-        <div style="font-family: var(--serif); font-size: 28px; margin-bottom: 8px; color: var(--ink);">Tu carrito está vacío</div>
+        <div style="font-family: var(--serif); font-size: 28px; margin-bottom: 8px; color: var(--ink); font-weight: 500;">Tu carrito está vacío</div>
         <p style="font-size: 12px; margin-bottom: 24px;">Aún no has agregado productos al carrito.</p>
         <button class="btn primary" onclick="navigate('catalogo')">Explorar catálogo</button>
       </div>`;
-    document.getElementById('sumSubtotal').textContent = '$0';
-    document.getElementById('sumShipping').textContent = '—';
-    document.getElementById('sumTotal').textContent = '$0';
+    $('#sumSubtotal').textContent = '$0';
+    $('#sumShipping').textContent = '—';
+    $('#sumTotal').textContent = '$0';
+    $('#sumDiscountRow').style.display = 'none';
+    $('#appliedPromoArea').innerHTML = '';
+    $('#checkoutBtn').disabled = true;
+    $('#checkoutBtn').style.opacity = '0.4';
+    $('#checkoutBtn').style.pointerEvents = 'none';
     return;
   }
+  $('#checkoutBtn').disabled = false;
+  $('#checkoutBtn').style.opacity = '1';
+  $('#checkoutBtn').style.pointerEvents = 'auto';
 
-  list.innerHTML = cart.map((it, i) => `
+  const t = cartTotals();
+  list.innerHTML = t.items.map((it, i) => `
     <div class="cart-row">
-      <div class="cart-row-img placeholder cross"><span class="label" style="font-size: 8px;">${it.id}</span></div>
+      <div class="cart-row-img placeholder cross">${productIconHTML(it.p.icon)}</div>
       <div>
-        <div class="cart-row-name">${it.name}</div>
-        <div class="cart-row-meta">SKU · ${it.id.toUpperCase()} · En stock</div>
+        <div class="cart-row-name">${it.p.name}</div>
+        <div class="cart-row-meta">SKU · ${it.id.toUpperCase()} · ${it.p.brand} · ${it.p.stock > 0 ? 'En stock' : 'Agotado'}</div>
       </div>
       <div class="cart-row-qty">
         <button onclick="cartQty(${i},-1)">−</button>
         <span>${it.qty}</span>
         <button onclick="cartQty(${i},1)">+</button>
       </div>
-      <div class="cart-row-price">${fmt(it.price * it.qty)}</div>
+      <div class="cart-row-price">${fmt(it.p.price * it.qty)}</div>
       <button class="cart-row-rm" onclick="cartRemove(${i})" title="Eliminar">
         <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>`).join('');
 
-  const sub = cart.reduce((s, it) => s + it.price * it.qty, 0);
-  const ship = sub > 1500 ? 0 : 120;
-  const total = sub + ship;
-  document.getElementById('sumSubtotal').textContent = fmt(sub);
-  document.getElementById('sumShipping').textContent = ship === 0 ? 'Gratis' : fmt(ship);
-  document.getElementById('sumTotal').textContent = fmt(total);
+  $('#sumSubtotal').textContent = fmt(t.sub);
+  $('#sumShipping').textContent = t.ship === 0 ? 'Gratis' : fmt(t.ship);
+  if (t.discount > 0) {
+    $('#sumDiscountRow').style.display = 'flex';
+    $('#sumDiscount').textContent = '−' + fmt(t.discount);
+  } else {
+    $('#sumDiscountRow').style.display = 'none';
+  }
+  $('#sumTotal').textContent = fmt(t.total);
+
+  // promo pill
+  if (state.promo && PROMO_CODES[state.promo]) {
+    $('#appliedPromoArea').innerHTML = `
+      <div class="promo-applied">
+        <span><b>${state.promo}</b> · ${PROMO_CODES[state.promo].label.split(' — ')[1]}</span>
+        <button onclick="removePromo()" title="Quitar cupón">✕</button>
+      </div>`;
+  } else {
+    $('#appliedPromoArea').innerHTML = '';
+  }
 }
 
 function cartQty(i, d) {
-  cart[i].qty = Math.max(1, cart[i].qty + d);
-  saveCart(); updateBadge(); renderCart();
+  state.cart[i].qty = Math.max(1, state.cart[i].qty + d);
+  saveCart();
 }
 function cartRemove(i) {
-  cart.splice(i, 1);
-  saveCart(); updateBadge(); renderCart();
+  state.cart.splice(i, 1);
+  saveCart();
+}
+function clearCart() {
+  if (state.cart.length === 0) return;
+  if (!confirm('¿Vaciar el carrito? Esta acción no se puede deshacer.')) return;
+  state.cart = [];
+  saveCart();
+  toast('Carrito vaciado');
 }
 
-function qtyChange(d) {
-  const inp = document.getElementById('pdQty');
-  inp.value = Math.max(1, parseInt(inp.value) + d);
+function applyPromo() {
+  const code = $('#promoInput').value.trim().toUpperCase();
+  if (!code) { toast('Ingresa un código'); return; }
+  if (!PROMO_CODES[code]) { toast('Código inválido'); return; }
+  state.promo = code;
+  persist('promo', state.promo);
+  $('#promoInput').value = '';
+  toast('✓ Cupón ' + code + ' aplicado');
+  renderCart();
+}
+function removePromo() {
+  state.promo = null;
+  persist('promo', null);
+  renderCart();
+  toast('Cupón removido');
+}
+
+function goToCheckout() {
+  if (state.cart.length === 0) { toast('Tu carrito está vacío'); return; }
+  navigate('checkout');
 }
 
 /* ═══════════════════════════════════════════════
-   CHECKOUT — stepper
+   PRODUCT DETAIL
 ═══════════════════════════════════════════════ */
+function renderProduct(id) {
+  const p = findProduct(id) || PRODUCTS[0];
+  state.currentProductId = p.id;
+  pushRecent(p.id);
+
+  const stockInfo = stockOf(p);
+  const isFav = state.wishlist.includes(p.id);
+  const savePct = p.was ? Math.round((1 - p.price/p.was) * 100) : 0;
+  const reviews = reviewsFor(p);
+  const related = PRODUCTS.filter(q => q.cat === p.cat && q.id !== p.id).slice(0, 4);
+
+  const html = `
+    <div class="breadcrumbs">
+      <a onclick="navigate('home')">Inicio</a><span class="sep">/</span>
+      <a onclick="navigate('catalogo')">Catálogo</a><span class="sep">/</span>
+      <a onclick="navigate('catalogo','${p.cat.toLowerCase().replace('é','e').replace('í','i')}')">${p.cat}</a><span class="sep">/</span>
+      <span>${p.name}</span>
+    </div>
+
+    <div class="pd-grid">
+      <div class="pd-gallery">
+        <div class="pd-thumbs">
+          <div class="pd-thumb active placeholder cross">${productIconHTML(p.icon)}</div>
+          <div class="pd-thumb placeholder cross">${productIconHTML(p.icon)}</div>
+          <div class="pd-thumb placeholder cross">${productIconHTML(p.icon)}</div>
+          <div class="pd-thumb placeholder cross">${productIconHTML(p.icon)}</div>
+        </div>
+        <div class="pd-main-img placeholder cross">${productIconHTML(p.icon)}</div>
+      </div>
+
+      <div class="pd-info">
+        <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px;">
+          ${p.cat} · ${p.sub} · ${p.brand}
+        </div>
+        <h1>${p.name}</h1>
+        <div class="stars">
+          <span>${starsHand(p.rating)}</span> <span>${p.rating} · ${p.reviews} reseñas</span>
+        </div>
+
+        <div class="pd-price-block">
+          <span class="now">${fmt(p.price)}</span>
+          ${p.was ? `<span class="was">${fmt(p.was)}</span><span class="save">−${savePct}%</span>` : ''}
+        </div>
+
+        <div style="margin-bottom: 18px;"><span class="stock-pill ${stockInfo.cls}">${stockInfo.label}</span></div>
+
+        <p class="pd-desc">${p.desc}</p>
+
+        <div class="pd-spec-grid">
+          ${p.specs.slice(0,4).map(s => `<div><span>${s[0]}</span><b>${s[1]}</b></div>`).join('')}
+        </div>
+
+        <div class="pd-cta">
+          <div class="pd-qty">
+            <button onclick="qtyChange(-1)">−</button>
+            <input type="text" value="1" id="pdQty" data-id="${p.id}">
+            <button onclick="qtyChange(1)">+</button>
+          </div>
+          <button class="btn primary" style="flex: 1;" onclick="addToCart('${p.id}', parseInt(document.getElementById('pdQty').value)||1)" ${p.stock===0?'disabled style="opacity:0.4;"':''}>
+            ${p.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
+            ${p.stock !== 0 ? '<svg viewBox=\"0 0 24 24\"><path d=\"M5 12h14M12 5l7 7-7 7\"/></svg>' : ''}
+          </button>
+          <button class="icon-btn" title="Favorito" onclick="toggleFav('${p.id}', this)">
+            <svg viewBox="0 0 24 24" style="${isFav?'fill: var(--pen-red); stroke: var(--pen-red);':''}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+
+        <div class="pd-meta-row">
+          <span>📦 <b>Envío gratis</b> · llega en 24-48h en CDMX</span>
+          <span>↻ <b>Devoluciones</b> · 30 días sin costo</span>
+          <span>🛡 <b>Garantía</b> · 1 año oficial ${p.brand}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-tabs">
+      <button class="pd-tab active" onclick="pdTab(this, 'desc')">Descripción</button>
+      <button class="pd-tab" onclick="pdTab(this, 'specs')">Especificaciones</button>
+      <button class="pd-tab" onclick="pdTab(this, 'reviews')">Reseñas (${p.reviews})</button>
+    </div>
+    <div class="pd-tab-content active" data-tab="desc">
+      <p>${p.desc}</p>
+      <p>Diseñado para quienes valoran la calidad de construcción tanto como el rendimiento. Cada unidad pasa por verificación QA antes de salir del almacén de TECH/WHITE en CDMX.</p>
+    </div>
+    <div class="pd-tab-content" data-tab="specs">
+      <ul class="pd-spec-list">
+        ${p.specs.map(s => `<li>${s[0]}<b>${s[1]}</b></li>`).join('')}
+      </ul>
+    </div>
+    <div class="pd-tab-content" data-tab="reviews">
+      <div class="review-summary">
+        <div>
+          <div class="big">${p.rating}<small>/5</small></div>
+          <div class="big-stars">${starsHand(p.rating)}</div>
+        </div>
+        <div class="review-count">Basado en ${p.reviews} reseñas verificadas de clientes que recibieron el producto en los últimos 90 días.</div>
+      </div>
+      <div class="review-list">
+        ${reviews.map(r => `
+          <div class="review-card">
+            <div class="review-head"><span class="who">${r.who}</span><span class="when">${r.when}</span></div>
+            <div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+            <div class="body">"${r.body}"</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    ${related.length ? `
+      <div class="related-block">
+        <h3>También te puede <em>interesar</em></h3>
+        <div class="related-grid">
+          ${related.map(prodCard).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="stickynote tilt-l" style="top: 60px; left: -130px;">
+      <span class="tag">Pieza · Detalle</span>
+      Galería con <b>thumbs</b> + <b>imagen principal</b>. Tabs reales, reseñas y relacionados — todo cargado dinámicamente.
+    </div>
+  `;
+  $('#productPage').innerHTML = html;
+}
+
+function pdTab(el, key) {
+  $$('.pd-tab').forEach(t => t.classList.remove('active'));
+  $$('.pd-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  $('.pd-tab-content[data-tab="' + key + '"]').classList.add('active');
+}
+
+function qtyChange(d) {
+  const inp = $('#pdQty');
+  inp.value = Math.max(1, parseInt(inp.value || '1') + d);
+}
+
+/* ═══════════════════════════════════════════════
+   WISHLIST
+═══════════════════════════════════════════════ */
+function toggleFav(id, btn) {
+  const idx = state.wishlist.indexOf(id);
+  if (idx >= 0) {
+    state.wishlist.splice(idx, 1);
+    if (btn) btn.classList && btn.classList.remove('on');
+    toast('Removido de favoritos');
+  } else {
+    state.wishlist.push(id);
+    if (btn) btn.classList && btn.classList.add('on');
+    toast('Agregado a favoritos');
+  }
+  persist('wishlist', state.wishlist);
+  updateWishBadge();
+  // re-render grids relevantes
+  if ($('#view-home').classList.contains('active')) renderFeatured();
+  if ($('#view-catalogo').classList.contains('active')) applyFilters();
+  if ($('#view-wishlist').classList.contains('active')) renderWishlist();
+  if ($('#view-product').classList.contains('active')) {
+    // re-renderiza para reflejar fav state
+    renderProduct(state.currentProductId);
+  }
+}
+
+function renderWishlist() {
+  const grid = $('#wishlistGrid');
+  if (state.wishlist.length === 0) {
+    grid.innerHTML = `
+      <div class="no-results" style="grid-column: 1/-1;">
+        <div class="nr-h">Aún no hay favoritos</div>
+        <p>Toca el ♡ en cualquier producto para guardarlo aquí.</p>
+        <button class="btn primary" style="margin-top: 16px;" onclick="navigate('catalogo')">Explorar catálogo</button>
+      </div>`;
+    return;
+  }
+  const items = state.wishlist.map(findProduct).filter(Boolean);
+  grid.innerHTML = items.map(prodCard).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   ORDERS
+═══════════════════════════════════════════════ */
+function renderOrders() {
+  const list = $('#ordersList');
+  if (state.orders.length === 0) {
+    list.innerHTML = `
+      <div class="no-results">
+        <div class="nr-h">No tienes pedidos todavía</div>
+        <p>Tus pedidos aparecerán aquí después de completar un checkout.</p>
+        <button class="btn primary" style="margin-top: 16px;" onclick="navigate('catalogo')">Ir al catálogo</button>
+      </div>`;
+    return;
+  }
+  const sorted = [...state.orders].sort((a,b) => b.ts - a.ts);
+  list.innerHTML = sorted.map(o => {
+    const itemCount = o.items.reduce((s, it) => s + it.qty, 0);
+    const names = o.items.slice(0,2).map(it => (findProduct(it.id)||{name:it.id}).name).join(', ');
+    const more = o.items.length > 2 ? ` y ${o.items.length - 2} más` : '';
+    return `
+      <div class="order-item">
+        <div>
+          <div class="meta">${o.id} · ${new Date(o.ts).toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' })}</div>
+          <h4>${itemCount} ${itemCount===1?'producto':'productos'}</h4>
+          <div class="order-summary">${names}${more}</div>
+          <div style="margin-top: 6px;"><span class="order-status ${o.status === 'Entregado' ? 'delivered' : ''}">${o.status}</span></div>
+        </div>
+        <div class="order-total">
+          <b>${fmt(o.total)}</b>
+          <button class="btn small" onclick="reorder('${o.id}')">Volver a comprar</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function reorder(orderId) {
+  const o = state.orders.find(x => x.id === orderId);
+  if (!o) return;
+  o.items.forEach(it => addToCart(it.id, it.qty));
+  navigate('cart');
+}
+
+/* ═══════════════════════════════════════════════
+   RECENTLY VIEWED
+═══════════════════════════════════════════════ */
+function pushRecent(id) {
+  const arr = state.recent.filter(x => x !== id);
+  arr.unshift(id);
+  state.recent = arr.slice(0, 6);
+  persist('recent', state.recent);
+}
+function renderRecent() {
+  const sec = $('#recentSection');
+  const grid = $('#recentGrid');
+  const ids = state.recent.filter(id => findProduct(id));
+  if (ids.length < 2) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  grid.innerHTML = ids.map(id => prodCard(findProduct(id))).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   BUILDER — algoritmo real
+═══════════════════════════════════════════════ */
+const USECASE_PROFILE = {
+  // peso por categoría/sub para distribuir presupuesto
+  gaming:    { GPU: 0.40, CPU: 0.20, Monitor: 0.18, RAM: 0.06, SSD: 0.06, Mouse: 0.04, Teclado: 0.04, Audio: 0.02 },
+  streaming: { GPU: 0.32, CPU: 0.24, Monitor: 0.16, RAM: 0.08, SSD: 0.06, Audio: 0.06, Mouse: 0.04, Teclado: 0.04 },
+  creator:   { GPU: 0.30, CPU: 0.22, Monitor: 0.22, RAM: 0.10, SSD: 0.08, Audio: 0.04, Teclado: 0.04 },
+  work:      { CPU: 0.22, Monitor: 0.28, RAM: 0.12, SSD: 0.12, Teclado: 0.10, Mouse: 0.08, Audio: 0.08 },
+};
+
+function pickClosest(list, targetPrice) {
+  if (list.length === 0) return null;
+  return list.reduce((best, p) => {
+    const d = Math.abs(p.price - targetPrice);
+    return d < Math.abs((best?.price ?? Infinity) - targetPrice) ? p : best;
+  }, null);
+}
+
+function recalcBuild() {
+  const budget = state.budget;
+  const useCase = state.useCase;
+  const profile = USECASE_PROFILE[useCase] || USECASE_PROFILE.gaming;
+
+  const picks = [];
+  for (const [sub, weight] of Object.entries(profile)) {
+    const target = budget * weight;
+    const pool = PRODUCTS.filter(p => p.sub === sub && p.stock > 0 && (p.tags||[]).includes(useCase));
+    const fallback = PRODUCTS.filter(p => p.sub === sub && p.stock > 0);
+    const chosen = pickClosest(pool.length ? pool : fallback, target);
+    if (chosen) picks.push(chosen);
+  }
+  // si nos pasamos del presupuesto, intenta reducir
+  let total = picks.reduce((s, p) => s + p.price, 0);
+  let safety = 8;
+  while (total > budget * 1.15 && safety > 0) {
+    // baja el más caro a uno más barato del mismo sub
+    const idx = picks.indexOf([...picks].sort((a,b) => b.price - a.price)[0]);
+    const sub = picks[idx].sub;
+    const cheaper = PRODUCTS
+      .filter(p => p.sub === sub && p.stock > 0 && p.price < picks[idx].price)
+      .sort((a,b) => b.price - a.price)[0];
+    if (cheaper) picks[idx] = cheaper;
+    else break;
+    total = picks.reduce((s, p) => s + p.price, 0);
+    safety--;
+  }
+
+  state.currentBuild = picks;
+  renderBuild();
+}
+
+function renderBuild() {
+  const list = $('#buildList');
+  if (!list) return;
+  if (state.currentBuild.length === 0) {
+    list.innerHTML = '<div style="font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); padding: 20px;">Ajusta presupuesto y caso de uso → recalcular.</div>';
+    $('.build-total b').textContent = '$0';
+    return;
+  }
+  list.innerHTML = state.currentBuild.map(p => `
+    <div class="build-item" onclick="goToProduct('${p.id}')" style="cursor: pointer;">
+      <div class="build-item-img placeholder cross">${productIconHTML(p.icon)}</div>
+      <div>
+        <div class="build-item-cat">${p.sub}</div>
+        <div class="build-item-name">${p.name}</div>
+      </div>
+      <div class="build-item-price">${fmt(p.price)}</div>
+    </div>`).join('');
+  const total = state.currentBuild.reduce((s, p) => s + p.price, 0);
+  $('.build-total b').textContent = fmt(total);
+  const fitMsg = total <= state.budget
+    ? '✓ Cabe en tu presupuesto (' + fmt(state.budget - total) + ' de margen)'
+    : '⚠ Se pasa por ' + fmt(total - state.budget) + ' del presupuesto';
+  let msgEl = $('#buildFitMsg');
+  if (!msgEl) {
+    msgEl = document.createElement('div');
+    msgEl.id = 'buildFitMsg';
+    msgEl.style.cssText = 'font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; margin-top: 12px; padding: 8px 12px; border-left: 3px solid currentColor;';
+    $('.builder-result').appendChild(msgEl);
+  }
+  msgEl.textContent = fitMsg;
+  msgEl.style.color = total <= state.budget ? 'var(--pen-green)' : 'var(--pen-red)';
+}
+
+function selUse(el) {
+  $$('.usecase').forEach(u => u.classList.remove('sel'));
+  el.classList.add('sel');
+  state.useCase = el.dataset.uc || el.querySelector('b').textContent.toLowerCase();
+  // map to algorithm key
+  const map = { gaming:'gaming', streaming:'streaming', creador:'creator', creator:'creator', trabajo:'work', work:'work' };
+  state.useCase = map[state.useCase] || 'gaming';
+}
+
+function addBuildToCart() {
+  if (state.currentBuild.length === 0) { toast('Recalcula primero la build'); return; }
+  state.currentBuild.forEach(p => addToCart(p.id, 1));
+  toast('✓ Build completa agregada al carrito');
+}
+
+/* SLIDER (drag + click) */
+function bindRange() {
+  const track = $('#rangeTrack');
+  const fill = $('#rangeFill');
+  const thumb = $('#rangeThumb');
+  if (!track) return;
+  const min = 5000, max = 50000;
+  function setFromPct(pct) {
+    pct = Math.max(0, Math.min(1, pct));
+    fill.style.width = (pct * 100) + '%';
+    thumb.style.left = (pct * 100) + '%';
+    const val = Math.round((min + pct * (max - min)) / 500) * 500;
+    state.budget = val;
+    $('#budgetVal').textContent = fmt(val);
+  }
+  function pctFromX(x) {
+    const r = track.getBoundingClientRect();
+    return (x - r.left) / r.width;
+  }
+  // initial
+  const initialPct = (state.budget - min) / (max - min);
+  setFromPct(initialPct);
+
+  let dragging = false;
+  track.addEventListener('mousedown', (e) => { dragging = true; setFromPct(pctFromX(e.clientX)); });
+  thumb.addEventListener('mousedown', (e) => { dragging = true; e.stopPropagation(); });
+  document.addEventListener('mousemove', (e) => { if (dragging) setFromPct(pctFromX(e.clientX)); });
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; recalcBuild(); }
+  });
+  // touch
+  track.addEventListener('touchstart', (e) => { dragging = true; setFromPct(pctFromX(e.touches[0].clientX)); }, { passive: true });
+  document.addEventListener('touchmove', (e) => { if (dragging) setFromPct(pctFromX(e.touches[0].clientX)); }, { passive: true });
+  document.addEventListener('touchend', () => { if (dragging) { dragging = false; recalcBuild(); } });
+}
+
+/* ═══════════════════════════════════════════════
+   CHECKOUT
+═══════════════════════════════════════════════ */
+function initCheckout() {
+  state.checkoutStep = 1;
+  goStep(1);
+  renderCheckoutSummary();
+  // bind shipping options
+  $$('.shipping-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      $$('.shipping-opt').forEach(o => o.classList.remove('sel'));
+      opt.classList.add('sel');
+      state.shipping = opt.dataset.shipid || 'express';
+      localStorage.setItem('proto_shipping', state.shipping);
+      renderCheckoutSummary();
+    });
+  });
+}
+
 function goStep(n) {
-  const steps = document.querySelectorAll('.steps .step');
-  steps.forEach((s, i) => {
+  state.checkoutStep = n;
+  $$('.steps .step').forEach((s, i) => {
     s.classList.remove('active', 'done');
     if (i < n - 1) s.classList.add('done');
     if (i === n - 1) s.classList.add('active');
   });
+  $$('.step-panel').forEach(p => p.style.display = 'none');
+  const panel = $('.step-panel[data-panel="' + n + '"]');
+  if (panel) panel.style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderCheckoutSummary();
+}
+
+function validateField(field) {
+  const input = field.querySelector('input, select');
+  if (!input) return true;
+  const type = field.dataset.type;
+  const val = input.value.trim();
+  let valid = !!val;
+  if (type === 'email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  if (type === 'phone') valid = /^[0-9 ]{10,12}$/.test(val);
+  if (type === 'cp')    valid = /^[0-9]{5}$/.test(val);
+  if (type === 'card')  valid = val.replace(/\s/g,'').length >= 13 && /^[0-9 ]+$/.test(val);
+  if (type === 'exp')   valid = /^[0-9]{2}\/[0-9]{2}$/.test(val);
+  if (type === 'cvv')   valid = /^[0-9]{3,4}$/.test(val);
+  if (type === 'pass')  valid = val.length >= 6;
+  field.classList.toggle('error', !valid);
+  return valid;
+}
+
+function validatePanel(n) {
+  const panel = $('.step-panel[data-panel="' + n + '"]');
+  if (!panel) return true;
+  const fields = panel.querySelectorAll('.field[data-required]');
+  let allOk = true;
+  fields.forEach(f => {
+    if (!validateField(f)) allOk = false;
+  });
+  return allOk;
+}
+
+function submitStep(n) {
+  // validar paso actual
+  const visible = state.checkoutStep;
+  if (!validatePanel(visible)) {
+    toast('Revisa los campos marcados');
+    return;
+  }
+  goStep(n + 1);
+}
+
+function togglePayMethod() {
+  const v = document.querySelector('input[name="paytype"]:checked').value;
+  $('#payCard').style.display = v === 'card' ? '' : 'none';
+  $('#payOxxo').style.display = v === 'oxxo' ? '' : 'none';
+  $('#payPaypal').style.display = v === 'paypal' ? '' : 'none';
+  // si no es tarjeta, los campos no son requeridos
+  $$('.step-panel[data-panel="3"] .field[data-required]').forEach(f => {
+    if (v === 'card') f.classList.add('reactivate');
+    else f.classList.remove('error');
+  });
+}
+
+function placeOrder() {
+  // si paga con tarjeta valida los campos; si no, salta
+  const payType = document.querySelector('input[name="paytype"]:checked').value;
+  if (payType === 'card') {
+    if (!validatePanel(3)) { toast('Revisa los datos de la tarjeta'); return; }
+  }
+
+  const t = cartTotals();
+  const order = {
+    id: '#TW' + Math.floor(100000 + Math.random() * 900000),
+    ts: Date.now(),
+    items: state.cart.slice(),
+    subtotal: t.sub,
+    shipping: t.ship,
+    discount: t.discount,
+    tax: t.tax,
+    total: t.total,
+    shippingMethod: state.shipping,
+    payment: payType,
+    address: {
+      nombre: $('#coNombre').value,
+      apellido: $('#coApellido').value,
+      email: $('#coEmail').value,
+      tel: $('#coTel').value,
+      calle: $('#coCalle').value,
+      colonia: $('#coColonia').value,
+      cp: $('#coCP').value,
+      ciudad: $('#coCiudad').value,
+      estado: $('#coEstado').value,
+    },
+    status: 'En proceso',
+  };
+  state.orders.push(order);
+  persist('orders', state.orders);
+
+  // limpiar
+  state.cart = [];
+  state.promo = null;
+  persist('cart', state.cart);
+  persist('promo', null);
+  updateBadge();
+
+  // confirm view
+  $('#confirmNum').textContent = order.id;
+  $('#confirmTotal').textContent = fmt(order.total);
+  $('#confirmEmail').textContent = order.address.email || 'tu@email.com';
+  const eta = new Date();
+  const days = state.shipping === 'express' ? 1 : (state.shipping === 'pickup' ? 0 : 4);
+  eta.setDate(eta.getDate() + days);
+  $('#confirmEta').textContent = state.shipping === 'pickup' ? 'Recoger hoy' : eta.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'short' });
+
+  navigate('confirm');
+  toast('✓ Pedido ' + order.id + ' confirmado');
+}
+
+function renderCheckoutSummary() {
+  const t = cartTotals();
+  // Items list resumida
+  const itemsHtml = t.items.map(it => `<div style="display:flex; justify-content: space-between; padding: 3px 0;"><span>${it.qty}× ${it.p.name}</span><b style="font-family: var(--serif); color: var(--ink); font-weight: 600;">${fmt(it.p.price * it.qty)}</b></div>`).join('');
+  if ($('#checkoutItems')) $('#checkoutItems').innerHTML = itemsHtml || '<em>Carrito vacío</em>';
+  if ($('#coSubtotal')) $('#coSubtotal').textContent = fmt(t.sub);
+  if ($('#coShipping')) $('#coShipping').textContent = t.ship === 0 ? 'Gratis' : fmt(t.ship);
+  if ($('#coDiscRow')) {
+    $('#coDiscRow').style.display = t.discount > 0 ? 'flex' : 'none';
+    $('#coDiscount').textContent = '−' + fmt(t.discount);
+  }
+  if ($('#coTax')) $('#coTax').textContent = fmt(t.tax);
+  if ($('#coTotal')) $('#coTotal').textContent = fmt(t.total);
+}
+
+/* Format helpers para inputs de pago */
+function bindPaymentMasks() {
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'payNum') {
+      t.value = t.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+    }
+    if (t.id === 'payExp') {
+      let v = t.value.replace(/\D/g, '').slice(0, 4);
+      if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+      t.value = v;
+    }
+    if (t.id === 'payCVV' || t.id === 'coTel' || t.id === 'coCP') {
+      t.value = t.value.replace(/\D/g, '');
+    }
+  });
 }
 
 /* ═══════════════════════════════════════════════
-   ACCOUNT TABS
+   ACCOUNT
 ═══════════════════════════════════════════════ */
-function acTab(el, idx) {
-  document.querySelectorAll('.account-tab').forEach(t => t.classList.remove('active'));
+function acTab(el, key) {
+  $$('.account-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  toast(idx === 0 ? 'Tab login activo' : 'Tab registro activo');
-}
-function mockLogin() {
-  toast('✓ Login simulado — bienvenido (mock)');
-  setTimeout(() => navigate('home'), 800);
+  $$('.ac-pane').forEach(p => p.style.display = 'none');
+  const map = { login: '#acLogin', register: '#acRegister', forgot: '#acForgot' };
+  $(map[key]).style.display = '';
 }
 
-/* ═══════════════════════════════════════════════
-   BUILDER
-═══════════════════════════════════════════════ */
-function setRange(e) {
-  const track = document.getElementById('rangeTrack');
-  const rect = track.getBoundingClientRect();
-  let pct = (e.clientX - rect.left) / rect.width;
-  pct = Math.max(0, Math.min(1, pct));
-  document.getElementById('rangeFill').style.width = (pct * 100) + '%';
-  document.getElementById('rangeThumb').style.left = (pct * 100) + '%';
-  const min = 5000, max = 50000;
-  const val = Math.round((min + pct * (max - min)) / 100) * 100;
-  document.getElementById('budgetVal').textContent = fmt(val);
+function doLogin() {
+  const fields = $('#acLogin').querySelectorAll('.field[data-required]');
+  let ok = true;
+  fields.forEach(f => { if (!validateField(f)) ok = false; });
+  if (!ok) return;
+
+  const email = $('#loginEmail').value.trim();
+  state.user = { email, name: email.split('@')[0] };
+  persist('user', state.user);
+  $('#loginNotice').innerHTML = '<div class="notice ok">✓ Bienvenido, <b>' + email + '</b></div>';
+  setTimeout(() => { refreshAccount(); navigate('home'); }, 600);
 }
 
-function selUse(el) {
-  document.querySelectorAll('.usecase').forEach(u => u.classList.remove('sel'));
-  el.classList.add('sel');
+function doRegister() {
+  const fields = $('#acRegister').querySelectorAll('.field[data-required]');
+  let ok = true;
+  fields.forEach(f => { if (!validateField(f)) ok = false; });
+
+  // password match
+  const p1 = $('#regPass').value, p2 = $('#regPass2').value;
+  const f2 = $('#regPass2').closest('.field');
+  if (p1 !== p2) { f2.classList.add('error'); ok = false; }
+
+  if (!$('#regTerms').checked) {
+    $('#registerNotice').innerHTML = '<div class="notice">Debes aceptar los términos y condiciones</div>';
+    return;
+  }
+  if (!ok) return;
+
+  const email = $('#regEmail').value.trim();
+  const name = $('#regNombre').value.trim() + ' ' + $('#regApellido').value.trim();
+  state.user = { email, name };
+  persist('user', state.user);
+  $('#registerNotice').innerHTML = '<div class="notice ok">✓ Cuenta creada. Bienvenido, <b>' + name + '</b>.</div>';
+  setTimeout(() => { refreshAccount(); navigate('home'); }, 700);
 }
 
-function recalcBuild() {
-  toast('✓ Build recalculada según parámetros');
+function doForgot() {
+  const f = $('#acForgot').querySelector('.field[data-required]');
+  if (!validateField(f)) return;
+  $('#forgotNotice').innerHTML = '<div class="notice ok">✓ Te enviamos un link a <b>' + $('#forgotEmail').value + '</b> (simulado).</div>';
+  $('#forgotEmail').value = '';
 }
 
-function addBuildToCart() {
-  addToCart('h1', 'RTX 4060 Ti', 11999);
-  addToCart('h2', 'Ryzen 5 7600X', 5499);
-  addToCart('m1', 'Samsung Odyssey G5 27"', 5899);
-  addToCart('p1', 'Logitech G Pro X Superlight 2', 2199);
-  toast('✓ Build completa agregada al carrito');
+function logout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  state.user = null;
+  persist('user', null);
+  refreshAccount();
+  toast('Sesión cerrada');
+}
+
+function refreshAccount() {
+  if (state.user) {
+    $('#acGuest').style.display = 'none';
+    $('#acUser').style.display = '';
+    $('#acUserName').textContent = 'Hola, ' + state.user.name + '.';
+    $('#acUserMail').textContent = state.user.email;
+    $('#acStatOrders').textContent = state.orders.length;
+    $('#acStatFavs').textContent = state.wishlist.length;
+    $('#acStatCart').textContent = state.cart.reduce((s, it) => s + it.qty, 0);
+    const totalSpent = state.orders.reduce((s, o) => s + o.total, 0);
+    $('#acStatSpent').textContent = fmt(totalSpent);
+  } else {
+    $('#acGuest').style.display = '';
+    $('#acUser').style.display = 'none';
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -2866,11 +4938,11 @@ function addBuildToCart() {
 ═══════════════════════════════════════════════ */
 let toastTimer;
 function toast(msg) {
-  const t = document.getElementById('toast');
+  const t = $('#toast');
   t.textContent = msg;
   t.classList.add('on');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 2400);
 }
 
 /* ═══════════════════════════════════════════════
@@ -2881,21 +4953,47 @@ function toggleNotes() {
 }
 
 /* ═══════════════════════════════════════════════
-   FILTER CHIPS
+   THUMBNAIL ACTIVE STATE in detail
 ═══════════════════════════════════════════════ */
 document.addEventListener('click', (e) => {
-  if (e.target.classList && e.target.classList.contains('chip') && e.target.closest('.prod-controls')) {
-    e.target.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    e.target.classList.add('active');
+  if (e.target.closest('.pd-thumb')) {
+    const thumb = e.target.closest('.pd-thumb');
+    thumb.parentElement.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
   }
 });
 
 /* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
-renderFeatured();
-renderCatalog();
-updateBadge();
+function init() {
+  buildBrandFilters();
+  bindFilters();
+  bindGlobalSearch();
+  bindRange();
+  bindPaymentMasks();
+  renderFeatured();
+  renderRecent();
+  applyFilters();
+  recalcBuild();
+  updateBadge();
+  updateWishBadge();
+  refreshAccount();
+
+  // Marcar usecase data-uc
+  $$('.usecase').forEach(u => {
+    const t = u.querySelector('b').textContent.trim().toLowerCase();
+    const map = { gaming:'gaming', streaming:'streaming', creador:'creator', trabajo:'work' };
+    u.dataset.uc = map[t] || 'gaming';
+  });
+
+  // Cuando cambia el chip de productos destacados
+  $$('.prod-controls .chip').forEach((c, i) => {
+    const map = ['all','monitores','hardware','periféricos'];
+    c.addEventListener('click', () => setFeaturedChip(c, map[i]));
+  });
+}
+init();
 
 </script>
 </body>
